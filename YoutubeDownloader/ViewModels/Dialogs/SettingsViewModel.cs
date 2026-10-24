@@ -98,7 +98,9 @@ public partial class SettingsViewModel : DialogViewModelBase
     }
 
     public bool IsAutoUpdateAvailable { get; } =
-        OperatingSystem.IsWindows() && StartOptions.Current.IsAutoUpdateAllowed;
+        UpdateService.IsAvailable
+        && OperatingSystem.IsWindows()
+        && StartOptions.Current.IsAutoUpdateAllowed;
 
     public bool IsAutoUpdateEnabled
     {

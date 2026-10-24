@@ -8,3 +8,4 @@
 - 2026-10-24 | nouvelle demande | Mettre en place les 10 fonctionnalités proposées (plan : .project/PLAN-fonctionnalites-ecole.md)
 - 2026-10-24 | implémentation | 10 fonctionnalités livrées sur feature/interface-ecole ; bug corrigé : découpage FFmpeg en échec sur les MP4 avec sous-titres intégrés (-c:s copy)
 - 2026-10-24 | demande | Suppression de l'avertissement « build instable » au démarrage
+- 2026-10-24 | demande | Mises à jour automatiques désactivées (pointaient vers Tyrrrz/YoutubeDownloader)

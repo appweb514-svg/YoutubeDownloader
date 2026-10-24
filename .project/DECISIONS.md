@@ -27,3 +27,8 @@
   - Import de listes txt/csv, historique CSV (anti-formules Excel), limite de débit globale (seau à jetons dans un DelegatingHandler), file programmée à une heure donnée.
   - Aperçu : lecteur youtube-nocookie dans le dialogue de téléchargement (un seul dialogue à la fois dans DialogManager).
 - Conséquences : le PIN protège l'interface, pas le fichier de réglages ; le découpage allonge le temps de traitement sans progression affichée ; l'aperçu peut être refusé par YouTube (erreur 153) → bouton « Ouvrir dans le navigateur ».
+
+## 2026-10-24 — Mises à jour automatiques désactivées
+- Contexte : l'updater (Onova) téléchargeait les versions du dépôt d'origine, ce qui aurait remplacé l'édition école par l'application originale.
+- Décision : `UpdateService.IsAvailable = false`, aucun gestionnaire de mise à jour créé ; réglage masqué dans les paramètres.
+- Conséquences : mises à jour manuelles ; pour les réactiver, publier des paquets `YoutubeDownloader.<rid>.zip` sur le fork et pointer `GithubPackageResolver` vers appweb514-svg/YoutubeDownloader.

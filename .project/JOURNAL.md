@@ -14,3 +14,4 @@
 - 2026-10-24 | demande | Suppression du message « Merci de soutenir l'Ukraine » affiché au premier lancement
 - 2026-10-24 | demande | Finaliser la suite : en-tête adaptatif, .srt recalés sur les extraits, progression du découpage, traductions DE/ES/HU/UK/ZH, titre et description de la PR
 - 2026-10-24 | bug | Erreur 403 (Forbidden) de YouTube à l'ajout d'une vidéo : 3 tentatives sur 403 et message d'erreur lisible au lieu de la pile d'appels
+- 2026-10-24 | demande | Nom Youtube4School partout (exécutable/Dock/barre des tâches, menu macOS) et numéro de version retiré du titre

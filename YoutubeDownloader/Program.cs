@@ -9,7 +9,7 @@ public static class Program
 {
     private static Assembly Assembly { get; } = Assembly.GetExecutingAssembly();
 
-    // Display name of the school edition; the assembly keeps its upstream name
+    // Display name of the school edition
     public static string Name { get; } = "Youtube4School";
 
     public static Version Version { get; } = Assembly.GetName().Version ?? new Version(0, 0, 0);

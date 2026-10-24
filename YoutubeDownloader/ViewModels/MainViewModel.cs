@@ -19,7 +19,7 @@ public partial class MainViewModel(
     UpdateService updateService
 ) : ViewModelBase
 {
-    public string Title { get; } = $"{Program.Name} v{Program.VersionString}";
+    public string Title { get; } = Program.Name;
 
     public DashboardViewModel Dashboard { get; } = viewModelManager.GetDashboardViewModel();
 

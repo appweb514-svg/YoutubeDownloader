@@ -11,3 +11,4 @@
 - 2026-10-24 | demande | Mises à jour automatiques désactivées (pointaient vers Tyrrrz/YoutubeDownloader)
 - 2026-10-24 | demande | Renommer l'app en « Youtube4School » (titre de fenêtre, nom du bundle macOS ; assembly inchangé)
 - 2026-10-24 | demande | Thèmes de couleur au choix dans les paramètres (Bleu école, Vert nature, Océan, Lavande, Coucher de soleil, Classique), en clair et sombre
+- 2026-10-24 | demande | Suppression du message « Merci de soutenir l'Ukraine » affiché au premier lancement

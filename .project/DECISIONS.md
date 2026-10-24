@@ -42,3 +42,8 @@
 - Contexte : le découpage FFmpeg ne montrait aucune progression et les `.srt` séparés gardaient les horaires de la vidéo complète.
 - Décision : `FFmpeg.TrimAsync` lit `-progress pipe:1` (out_time_us) rapporté sur la durée attendue de l'extrait ; `DownloadViewModel.IsTrimming` affiche « Découpage de l'extrait… X % ». `DownloadSubtitleFilesAsync` accepte `clipStart/clipEnd` et écrit le SRT via `Core/Utils/SubRip` (sous-titres filtrés, bornés et décalés). En dessous de 760 px, l'en-tête passe en classe `compact` (icônes seules).
 - Conséquences : traductions DE/ES/HU/UK/ZH des textes école générées automatiquement, à faire relire par des locuteurs.
+
+## 2026-10-24 — Distribution portable sans droits administrateur (Windows)
+- Contexte : les postes de l'école n'accordent pas les droits administrateur.
+- Décision : pas d'installateur ; publication autonome (self-contained, aucun runtime .NET à installer) en zip `Youtube4School-portable.<rid>.zip` avec `LISEZMOI.txt`. Manifeste `requestedExecutionLevel=asInvoker`. `StartOptions.DataDirPath` : dossier de l'exe s'il est inscriptible (portable, clé USB), sinon `%LOCALAPPDATA%\Youtube4School` ; réglages, historique et FFmpeg téléchargé y sont rangés (chemin FFmpeg mémorisé s'il n'est pas trouvé par sondage).
+- Conséquences : l'exe n'est pas signé → avertissement SmartScreen contournable sans droits admin. Paquet ~79 Mo (non élagué, PublishTrimmed=false hérité).

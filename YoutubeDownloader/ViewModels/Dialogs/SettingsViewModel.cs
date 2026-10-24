@@ -38,8 +38,9 @@ public partial class SettingsViewModel : DialogViewModelBase
 
     public IReadOnlyList<ThemeVariant> AvailableThemes { get; } = Enum.GetValues<ThemeVariant>();
 
+    // Built once: a new list on every settings change would make the combo box push back a stale selection
     public IReadOnlyList<ColorThemeOption> AvailableColorThemes =>
-        [
+        field ??= [
             new(ColorTheme.School, LocalizationManager.ColorThemeSchool),
             new(ColorTheme.Nature, LocalizationManager.ColorThemeNature),
             new(ColorTheme.Ocean, LocalizationManager.ColorThemeOcean),

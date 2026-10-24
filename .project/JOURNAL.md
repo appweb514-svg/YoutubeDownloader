@@ -15,3 +15,5 @@
 - 2026-10-24 | demande | Finaliser la suite : en-tête adaptatif, .srt recalés sur les extraits, progression du découpage, traductions DE/ES/HU/UK/ZH, titre et description de la PR
 - 2026-10-24 | bug | Erreur 403 (Forbidden) de YouTube à l'ajout d'une vidéo : 3 tentatives sur 403 et message d'erreur lisible au lieu de la pile d'appels
 - 2026-10-24 | demande | Nom Youtube4School partout (exécutable/Dock/barre des tâches, menu macOS) et numéro de version retiré du titre
+- 2026-10-24 | bug | Changement de couleur sans effet : la liste des palettes, recréée à chaque changement de réglage, renvoyait l'ancienne sélection ; liste construite une seule fois (vérifié en test headless avec captures)
+- 2026-10-24 | demande | Version portable Windows sans droits administrateur : données à côté de l'exe (repli %LOCALAPPDATA%\Youtube4School), manifeste asInvoker, zip Youtube4School-portable.<rid>.zip avec LISEZMOI.txt

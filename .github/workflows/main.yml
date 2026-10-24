@@ -167,14 +167,14 @@ jobs:
       - name: Create package
         # Change into the artifacts directory to avoid including the directory itself in the zip archive
         working-directory: YoutubeDownloader/
-        run: zip -r ../YoutubeDownloader.${{ matrix.rid }}.zip .
+        run: zip -r ../Youtube4School-portable.${{ matrix.rid }}.zip .
 
       - name: Upload release asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
           gh release upload ${{ github.ref_name }}
-          YoutubeDownloader.${{ matrix.rid }}.zip
+          Youtube4School-portable.${{ matrix.rid }}.zip
           --repo ${{ github.event.repository.full_name }}
 
   notify:

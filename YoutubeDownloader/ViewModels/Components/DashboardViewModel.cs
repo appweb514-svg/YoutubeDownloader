@@ -210,10 +210,16 @@ public partial class DashboardViewModel : ViewModelBase
 
         try
         {
-            await FFmpeg.DownloadAsync(
-                Path.Combine(AppContext.BaseDirectory, FFmpeg.CliFileName),
-                progress
-            );
+            // Stored with the app data, so it works without administrator rights
+            var ffmpegFilePath = Path.Combine(StartOptions.Current.DataDirPath, FFmpeg.CliFileName);
+            await FFmpeg.DownloadAsync(ffmpegFilePath, progress);
+
+            // Outside the app folder, FFmpeg is not found by probing, so point to it explicitly
+            if (FFmpeg.TryGetCliFilePath() is null)
+            {
+                _settingsService.FFmpegFilePath = ffmpegFilePath;
+                _settingsService.Save();
+            }
 
             _snackbarManager.Notify(_localizationManager.FFmpegDownloadCompletedTitle);
         }

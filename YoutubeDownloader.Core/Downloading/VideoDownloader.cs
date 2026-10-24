@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Gress;
@@ -27,8 +28,27 @@ public class VideoDownloader(IReadOnlyList<Cookie>? initialCookies = null) : IDi
         CancellationToken cancellationToken = default
     )
     {
-        var manifest = await _youtube.Videos.Streams.GetManifestAsync(videoId, cancellationToken);
-        return VideoDownloadOption.ResolveAll(manifest, includeLanguageSpecificAudioStreams);
+        // YouTube sometimes rejects stream URLs with 403 for a while; a new manifest often works
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                var manifest = await _youtube.Videos.Streams.GetManifestAsync(
+                    videoId,
+                    cancellationToken
+                );
+
+                return VideoDownloadOption.ResolveAll(
+                    manifest,
+                    includeLanguageSpecificAudioStreams
+                );
+            }
+            catch (HttpRequestException ex)
+                when (ex.StatusCode == HttpStatusCode.Forbidden && attempt < 3)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2 * attempt), cancellationToken);
+            }
+        }
     }
 
     public async Task<VideoDownloadOption> GetBestDownloadOptionAsync(

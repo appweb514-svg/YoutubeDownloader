@@ -158,6 +158,8 @@ public partial class LocalizationManager
             [nameof(PreviewCloseButton)] = "Előnézet bezárása",
             // Color themes
             [nameof(DownloadStatusTrimming)] = "Részlet kivágása… {0}",
+            [nameof(YoutubeForbiddenMessage)] =
+                "A YouTube megtagadta a hozzáférést ehhez a videóhoz (403-as hiba). Ez gyakran átmeneti: próbálja újra néhány perc múlva. Ha a videó korhatáros vagy privát, előbb jelentkezzen be a YouTube-fiókkal.",
             [nameof(ColorThemeLabel)] = "Színek",
             [nameof(ColorThemeTooltip)] = "A felület színpalettája",
             [nameof(ColorThemeSchool)] = "Iskolai kék",

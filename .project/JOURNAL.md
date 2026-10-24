@@ -13,3 +13,4 @@
 - 2026-10-24 | demande | Thèmes de couleur au choix dans les paramètres (Bleu école, Vert nature, Océan, Lavande, Coucher de soleil, Classique), en clair et sombre
 - 2026-10-24 | demande | Suppression du message « Merci de soutenir l'Ukraine » affiché au premier lancement
 - 2026-10-24 | demande | Finaliser la suite : en-tête adaptatif, .srt recalés sur les extraits, progression du découpage, traductions DE/ES/HU/UK/ZH, titre et description de la PR
+- 2026-10-24 | bug | Erreur 403 (Forbidden) de YouTube à l'ajout d'une vidéo : 3 tentatives sur 403 et message d'erreur lisible au lieu de la pile d'appels

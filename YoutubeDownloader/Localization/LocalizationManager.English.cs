@@ -157,6 +157,8 @@ public partial class LocalizationManager
             [nameof(PreviewCloseButton)] = "Close preview",
             // Color themes
             [nameof(DownloadStatusTrimming)] = "Trimming the clip… {0}",
+            [nameof(YoutubeForbiddenMessage)] =
+                "YouTube refused access to this video (error 403). This is often temporary: try again in a few minutes. If the video is age-restricted or private, sign in with YouTube Account first.",
             [nameof(ColorThemeLabel)] = "Colors",
             [nameof(ColorThemeTooltip)] = "Color palette of the interface",
             [nameof(ColorThemeSchool)] = "School blue",

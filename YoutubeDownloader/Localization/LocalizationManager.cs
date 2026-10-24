@@ -213,6 +213,7 @@ public partial class LocalizationManager
     // ---- Color themes ----
 
     public string DownloadStatusTrimming => Get();
+    public string YoutubeForbiddenMessage => Get();
 
     public string ColorThemeLabel => Get();
     public string ColorThemeTooltip => Get();

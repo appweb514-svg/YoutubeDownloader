@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -691,9 +693,13 @@ public partial class DashboardViewModel : ViewModelBase
                 _viewModelManager.GetMessageBoxViewModel(
                     LocalizationManager.ErrorTitle,
                     // Short error message for YouTube-related errors, full for others
-                    ex is YoutubeExplodeException
-                        ? ex.Message
-                        : ex.ToString()
+                    ex switch
+                    {
+                        HttpRequestException { StatusCode: HttpStatusCode.Forbidden } =>
+                            LocalizationManager.YoutubeForbiddenMessage,
+                        YoutubeExplodeException => ex.Message,
+                        _ => ex.ToString(),
+                    }
                 )
             );
         }

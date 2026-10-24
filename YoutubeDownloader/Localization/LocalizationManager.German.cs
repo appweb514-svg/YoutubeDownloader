@@ -160,6 +160,8 @@ public partial class LocalizationManager
         [nameof(PreviewCloseButton)] = "Vorschau schließen",
         // Color themes
         [nameof(DownloadStatusTrimming)] = "Ausschnitt wird zugeschnitten… {0}",
+        [nameof(YoutubeForbiddenMessage)] =
+            "YouTube hat den Zugriff auf dieses Video verweigert (Fehler 403). Das ist oft nur vorübergehend: Versuchen Sie es in einigen Minuten erneut. Ist das Video altersbeschränkt oder privat, melden Sie sich zuerst über YouTube-Konto an.",
         [nameof(ColorThemeLabel)] = "Farben",
         [nameof(ColorThemeTooltip)] = "Farbpalette der Benutzeroberfläche",
         [nameof(ColorThemeSchool)] = "Schulblau",

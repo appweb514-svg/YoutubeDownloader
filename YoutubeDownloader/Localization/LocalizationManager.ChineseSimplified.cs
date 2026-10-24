@@ -151,6 +151,8 @@ public partial class LocalizationManager
             [nameof(PreviewCloseButton)] = "关闭预览",
             // Color themes
             [nameof(DownloadStatusTrimming)] = "正在剪辑片段… {0}",
+            [nameof(YoutubeForbiddenMessage)] =
+                "YouTube 拒绝访问此视频（错误 403）。这通常是暂时的：请几分钟后重试。如果视频有年龄限制或为私享视频，请先通过“YouTube 账户”登录。",
             [nameof(ColorThemeLabel)] = "颜色",
             [nameof(ColorThemeTooltip)] = "界面配色方案",
             [nameof(ColorThemeSchool)] = "校园蓝",

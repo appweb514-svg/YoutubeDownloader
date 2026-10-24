@@ -158,6 +158,8 @@ public partial class LocalizationManager
             [nameof(PreviewCloseButton)] = "Закрити попередній перегляд",
             // Color themes
             [nameof(DownloadStatusTrimming)] = "Обрізання фрагмента… {0}",
+            [nameof(YoutubeForbiddenMessage)] =
+                "YouTube відмовив у доступі до цього відео (помилка 403). Часто це тимчасово: спробуйте ще раз за кілька хвилин. Якщо відео має вікове обмеження або є приватним, спершу увійдіть через «Обліковий запис YouTube».",
             [nameof(ColorThemeLabel)] = "Кольори",
             [nameof(ColorThemeTooltip)] = "Колірна палітра інтерфейсу",
             [nameof(ColorThemeSchool)] = "Шкільний синій",

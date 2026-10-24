@@ -159,6 +159,8 @@ public partial class LocalizationManager
         [nameof(PreviewCloseButton)] = "Fermer l'aperçu",
         // Color themes
         [nameof(DownloadStatusTrimming)] = "Découpage de l'extrait… {0}",
+        [nameof(YoutubeForbiddenMessage)] =
+            "YouTube a refusé l'accès à cette vidéo (erreur 403). C'est souvent passager : réessayez dans quelques minutes. Si la vidéo est soumise à une limite d'âge ou privée, connectez-vous d'abord avec Compte YouTube.",
         [nameof(ColorThemeLabel)] = "Couleurs",
         [nameof(ColorThemeTooltip)] = "Palette de couleurs de l'interface",
         [nameof(ColorThemeSchool)] = "Bleu école",

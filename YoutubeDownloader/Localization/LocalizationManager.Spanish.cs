@@ -157,6 +157,8 @@ public partial class LocalizationManager
             [nameof(PreviewCloseButton)] = "Cerrar vista previa",
             // Color themes
             [nameof(DownloadStatusTrimming)] = "Recortando el fragmento… {0}",
+            [nameof(YoutubeForbiddenMessage)] =
+                "YouTube ha denegado el acceso a este vídeo (error 403). Suele ser temporal: vuelva a intentarlo en unos minutos. Si el vídeo tiene restricción de edad o es privado, inicie sesión primero con Cuenta de YouTube.",
             [nameof(ColorThemeLabel)] = "Colores",
             [nameof(ColorThemeTooltip)] = "Paleta de colores de la interfaz",
             [nameof(ColorThemeSchool)] = "Azul escolar",

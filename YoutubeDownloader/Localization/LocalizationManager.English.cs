@@ -156,6 +156,7 @@ public partial class LocalizationManager
             [nameof(PreviewOpenInBrowserButton)] = "Open in browser",
             [nameof(PreviewCloseButton)] = "Close preview",
             // Color themes
+            [nameof(DownloadStatusTrimming)] = "Trimming the clip… {0}",
             [nameof(ColorThemeLabel)] = "Colors",
             [nameof(ColorThemeTooltip)] = "Color palette of the interface",
             [nameof(ColorThemeSchool)] = "School blue",

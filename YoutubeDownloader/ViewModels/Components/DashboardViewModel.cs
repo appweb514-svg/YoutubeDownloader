@@ -294,6 +294,9 @@ public partial class DashboardViewModel : ViewModelBase
             Path.GetFileNameWithoutExtension(filePath) + ".clip" + Path.GetExtension(filePath)
         );
 
+        download.IsTrimming = true;
+        download.Progress.Report(Percentage.FromFraction(0));
+
         try
         {
             await FFmpeg.TrimAsync(
@@ -302,6 +305,9 @@ public partial class DashboardViewModel : ViewModelBase
                 trimmedFilePath,
                 download.ClipStart,
                 download.ClipEnd,
+                (download.ClipEnd ?? download.Video?.Duration)
+                    - (download.ClipStart ?? TimeSpan.Zero),
+                download.Progress,
                 download.CancellationToken
             );
 
@@ -309,6 +315,8 @@ public partial class DashboardViewModel : ViewModelBase
         }
         finally
         {
+            download.IsTrimming = false;
+
             if (File.Exists(trimmedFilePath))
                 File.Delete(trimmedFilePath);
         }
@@ -490,7 +498,7 @@ public partial class DashboardViewModel : ViewModelBase
             if (download.HasClip)
                 await TrimDownloadAsync(download);
 
-            // Separate .srt files are not shifted to match a clip
+            // Separate .srt files follow the clip, if any
             if (_settingsService.ShouldSaveSubtitleFiles)
             {
                 try
@@ -499,6 +507,8 @@ public partial class DashboardViewModel : ViewModelBase
                         download.FilePath!,
                         download.Video!,
                         _settingsService.PreferredSubtitleLanguage,
+                        download.ClipStart,
+                        download.ClipEnd,
                         download.CancellationToken
                     );
                 }

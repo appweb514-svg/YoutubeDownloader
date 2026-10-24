@@ -161,6 +161,8 @@ public static class FFmpeg
         string outputFilePath,
         TimeSpan? start,
         TimeSpan? end,
+        TimeSpan? expectedDuration = null,
+        IProgress<Percentage>? progress = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -178,6 +180,11 @@ public static class FFmpeg
         startInfo.ArgumentList.Add("-hide_banner");
         startInfo.ArgumentList.Add("-nostdin");
         startInfo.ArgumentList.Add("-y");
+
+        // Machine-readable progress on stdout ('out_time_us=...'), instead of the stats line on stderr
+        startInfo.ArgumentList.Add("-nostats");
+        startInfo.ArgumentList.Add("-progress");
+        startInfo.ArgumentList.Add("pipe:1");
 
         // Input seeking: '-to' is then measured on the input timeline, like '-ss'
         if (start is { } startTime && startTime > TimeSpan.Zero)
@@ -212,7 +219,7 @@ public static class FFmpeg
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("Failed to start FFmpeg.");
 
-        var stdOutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var stdOutTask = ReadProgressAsync(process.StandardOutput);
         var stdErrTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
         try
@@ -234,6 +241,7 @@ public static class FFmpeg
         }
 
         await stdOutTask;
+        progress?.Report(Percentage.FromFraction(1));
         var stdErr = await stdErrTask;
 
         if (process.ExitCode != 0)
@@ -246,6 +254,30 @@ public static class FFmpeg
                         stdErr.Split('\n', StringSplitOptions.RemoveEmptyEntries).TakeLast(10)
                     )
             );
+        }
+
+        async Task ReadProgressAsync(StreamReader reader)
+        {
+            while (await reader.ReadLineAsync(cancellationToken) is { } line)
+            {
+                if (
+                    progress is null
+                    || expectedDuration is not { TotalMicroseconds: > 0 } duration
+                    || !line.StartsWith("out_time_us=", StringComparison.Ordinal)
+                    || !long.TryParse(
+                        line["out_time_us=".Length..],
+                        CultureInfo.InvariantCulture,
+                        out var outTimeUs
+                    )
+                )
+                    continue;
+
+                progress.Report(
+                    Percentage.FromFraction(
+                        Math.Clamp(outTimeUs / duration.TotalMicroseconds, 0, 1)
+                    )
+                );
+            }
         }
     }
 }

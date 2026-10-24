@@ -41,7 +41,11 @@ public partial class DownloadViewModel : ViewModelBase
 
         _eventSubscription = Progress.WatchProperty(
             o => o.Current,
-            _ => OnPropertyChanged(nameof(IsProgressIndeterminate))
+            _ =>
+            {
+                OnPropertyChanged(nameof(IsProgressIndeterminate));
+                OnPropertyChanged(nameof(ProgressText));
+            }
         );
     }
 
@@ -82,6 +86,10 @@ public partial class DownloadViewModel : ViewModelBase
     public partial DownloadStatus Status { get; set; } = DownloadStatus.Enqueued;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ProgressText))]
+    public partial bool IsTrimming { get; set; }
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CopyErrorMessageCommand))]
     public partial string? ErrorMessage { get; set; }
 
@@ -92,6 +100,11 @@ public partial class DownloadViewModel : ViewModelBase
     public ProgressContainer<Percentage> Progress { get; } = new();
 
     public bool IsProgressIndeterminate => Progress.Current.Fraction is <= 0 or >= 1;
+
+    public string ProgressText =>
+        IsTrimming
+            ? string.Format(LocalizationManager.DownloadStatusTrimming, Progress.Current)
+            : Progress.Current.ToString();
 
     public bool HasClip => ClipStart is not null || ClipEnd is not null;
 

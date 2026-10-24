@@ -37,3 +37,8 @@
 - Contexte : l'école veut une identité propre et pouvoir choisir les couleurs de l'interface.
 - Décision : `Program.Name = "Youtube4School"` (affichage seulement ; assembly, identifiant de bundle et chemins de paramètres inchangés). Nouveau réglage `ColorTheme` (enum dans `Framework/ColorTheme.cs`, couples primaire/secondaire clair/sombre) appliqué par `App.InitializeTheme` et réappliqué à chaud via `WatchProperty`.
 - Conséquences : les paramètres existants restent compatibles (défaut = Bleu école). Les fonds de page (PageBrush/StepBadgeBrush) restent neutres et ne suivent pas la palette.
+
+## 2026-10-24 — Extraits : progression et sous-titres recalés ; en-tête compact
+- Contexte : le découpage FFmpeg ne montrait aucune progression et les `.srt` séparés gardaient les horaires de la vidéo complète.
+- Décision : `FFmpeg.TrimAsync` lit `-progress pipe:1` (out_time_us) rapporté sur la durée attendue de l'extrait ; `DownloadViewModel.IsTrimming` affiche « Découpage de l'extrait… X % ». `DownloadSubtitleFilesAsync` accepte `clipStart/clipEnd` et écrit le SRT via `Core/Utils/SubRip` (sous-titres filtrés, bornés et décalés). En dessous de 760 px, l'en-tête passe en classe `compact` (icônes seules).
+- Conséquences : traductions DE/ES/HU/UK/ZH des textes école générées automatiquement, à faire relire par des locuteurs.

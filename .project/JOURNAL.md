@@ -12,3 +12,4 @@
 - 2026-10-24 | demande | Renommer l'app en « Youtube4School » (titre de fenêtre, nom du bundle macOS ; assembly inchangé)
 - 2026-10-24 | demande | Thèmes de couleur au choix dans les paramètres (Bleu école, Vert nature, Océan, Lavande, Coucher de soleil, Classique), en clair et sombre
 - 2026-10-24 | demande | Suppression du message « Merci de soutenir l'Ukraine » affiché au premier lancement
+- 2026-10-24 | demande | Finaliser la suite : en-tête adaptatif, .srt recalés sur les extraits, progression du découpage, traductions DE/ES/HU/UK/ZH, titre et description de la PR

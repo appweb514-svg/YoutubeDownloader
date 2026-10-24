@@ -112,6 +112,8 @@ public class VideoDownloader(IReadOnlyList<Cookie>? initialCookies = null) : IDi
         string filePath,
         IVideo video,
         string? languageCode = null,
+        TimeSpan? clipStart = null,
+        TimeSpan? clipEnd = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -132,12 +134,29 @@ public class VideoDownloader(IReadOnlyList<Cookie>? initialCookies = null) : IDi
             if (subtitleFilePaths.Contains(subtitleFilePath))
                 continue;
 
-            await _youtube.Videos.ClosedCaptions.DownloadAsync(
-                trackInfo,
-                subtitleFilePath,
-                null,
-                cancellationToken
-            );
+            if (clipStart is null && clipEnd is null)
+            {
+                await _youtube.Videos.ClosedCaptions.DownloadAsync(
+                    trackInfo,
+                    subtitleFilePath,
+                    null,
+                    cancellationToken
+                );
+            }
+            else
+            {
+                // Clip: keep only the captions shown within it, with times relative to its start
+                var track = await _youtube.Videos.ClosedCaptions.GetAsync(
+                    trackInfo,
+                    cancellationToken
+                );
+
+                await File.WriteAllTextAsync(
+                    subtitleFilePath,
+                    SubRip.Format(track.Captions, clipStart, clipEnd),
+                    cancellationToken
+                );
+            }
 
             subtitleFilePaths.Add(subtitleFilePath);
         }

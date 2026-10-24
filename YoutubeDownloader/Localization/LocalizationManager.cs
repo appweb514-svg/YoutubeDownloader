@@ -212,6 +212,8 @@ public partial class LocalizationManager
 
     // ---- Color themes ----
 
+    public string DownloadStatusTrimming => Get();
+
     public string ColorThemeLabel => Get();
     public string ColorThemeTooltip => Get();
     public string ColorThemeSchool => Get();

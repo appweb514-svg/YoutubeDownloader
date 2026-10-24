@@ -158,6 +158,7 @@ public partial class LocalizationManager
         [nameof(PreviewOpenInBrowserButton)] = "Ouvrir dans le navigateur",
         [nameof(PreviewCloseButton)] = "Fermer l'aperçu",
         // Color themes
+        [nameof(DownloadStatusTrimming)] = "Découpage de l'extrait… {0}",
         [nameof(ColorThemeLabel)] = "Couleurs",
         [nameof(ColorThemeTooltip)] = "Palette de couleurs de l'interface",
         [nameof(ColorThemeSchool)] = "Bleu école",

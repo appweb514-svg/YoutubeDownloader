@@ -32,3 +32,8 @@
 - Contexte : l'updater (Onova) téléchargeait les versions du dépôt d'origine, ce qui aurait remplacé l'édition école par l'application originale.
 - Décision : `UpdateService.IsAvailable = false`, aucun gestionnaire de mise à jour créé ; réglage masqué dans les paramètres.
 - Conséquences : mises à jour manuelles ; pour les réactiver, publier des paquets `YoutubeDownloader.<rid>.zip` sur le fork et pointer `GithubPackageResolver` vers appweb514-svg/YoutubeDownloader.
+
+## 2026-10-24 — Nom Youtube4School et thèmes de couleur
+- Contexte : l'école veut une identité propre et pouvoir choisir les couleurs de l'interface.
+- Décision : `Program.Name = "Youtube4School"` (affichage seulement ; assembly, identifiant de bundle et chemins de paramètres inchangés). Nouveau réglage `ColorTheme` (enum dans `Framework/ColorTheme.cs`, couples primaire/secondaire clair/sombre) appliqué par `App.InitializeTheme` et réappliqué à chaud via `WatchProperty`.
+- Conséquences : les paramètres existants restent compatibles (défaut = Bleu école). Les fonds de page (PageBrush/StepBadgeBrush) restent neutres et ne suivent pas la palette.

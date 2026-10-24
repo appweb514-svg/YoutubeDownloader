@@ -38,6 +38,26 @@ public partial class SettingsViewModel : DialogViewModelBase
 
     public IReadOnlyList<ThemeVariant> AvailableThemes { get; } = Enum.GetValues<ThemeVariant>();
 
+    public IReadOnlyList<ColorThemeOption> AvailableColorThemes =>
+        [
+            new(ColorTheme.School, LocalizationManager.ColorThemeSchool),
+            new(ColorTheme.Nature, LocalizationManager.ColorThemeNature),
+            new(ColorTheme.Ocean, LocalizationManager.ColorThemeOcean),
+            new(ColorTheme.Lavender, LocalizationManager.ColorThemeLavender),
+            new(ColorTheme.Sunset, LocalizationManager.ColorThemeSunset),
+            new(ColorTheme.Classic, LocalizationManager.ColorThemeClassic),
+        ];
+
+    public ColorThemeOption? SelectedColorTheme
+    {
+        get => AvailableColorThemes.FirstOrDefault(o => o.Value == _settingsService.ColorTheme);
+        set
+        {
+            if (value is not null)
+                _settingsService.ColorTheme = value.Value;
+        }
+    }
+
     public ThemeVariant Theme
     {
         get => _settingsService.Theme;
@@ -241,3 +261,5 @@ public partial class SettingsViewModel : DialogViewModelBase
         base.Dispose(disposing);
     }
 }
+
+public record ColorThemeOption(ColorTheme Value, string Name);

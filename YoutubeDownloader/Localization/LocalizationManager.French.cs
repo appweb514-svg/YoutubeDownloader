@@ -157,6 +157,15 @@ public partial class LocalizationManager
             "Regarder la vidéo ici avant de la télécharger (commence au début de l'extrait, s'il est défini)",
         [nameof(PreviewOpenInBrowserButton)] = "Ouvrir dans le navigateur",
         [nameof(PreviewCloseButton)] = "Fermer l'aperçu",
+        // Color themes
+        [nameof(ColorThemeLabel)] = "Couleurs",
+        [nameof(ColorThemeTooltip)] = "Palette de couleurs de l'interface",
+        [nameof(ColorThemeSchool)] = "Bleu école",
+        [nameof(ColorThemeNature)] = "Vert nature",
+        [nameof(ColorThemeOcean)] = "Océan",
+        [nameof(ColorThemeLavender)] = "Lavande",
+        [nameof(ColorThemeSunset)] = "Coucher de soleil",
+        [nameof(ColorThemeClassic)] = "Classique",
         // Settings
         [nameof(SettingsTitle)] = "Paramètres",
         [nameof(ThemeLabel)] = "Thème",

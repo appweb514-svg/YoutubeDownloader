@@ -210,6 +210,17 @@ public partial class LocalizationManager
     public string PreviewOpenInBrowserButton => Get();
     public string PreviewCloseButton => Get();
 
+    // ---- Color themes ----
+
+    public string ColorThemeLabel => Get();
+    public string ColorThemeTooltip => Get();
+    public string ColorThemeSchool => Get();
+    public string ColorThemeNature => Get();
+    public string ColorThemeOcean => Get();
+    public string ColorThemeLavender => Get();
+    public string ColorThemeSunset => Get();
+    public string ColorThemeClassic => Get();
+
     // ---- Settings ----
 
     public string SettingsTitle => Get();

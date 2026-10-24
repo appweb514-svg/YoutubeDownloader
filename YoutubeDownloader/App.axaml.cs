@@ -23,6 +23,7 @@ public partial class App : Application, IDisposable
     private readonly SettingsService _settingsService;
 
     private readonly IDisposable _eventSubscription;
+    private readonly IDisposable _colorThemeSubscription;
 
     private bool _isDisposed;
 
@@ -75,6 +76,11 @@ public partial class App : Application, IDisposable
                 InitializeTheme();
             }
         );
+
+        _colorThemeSubscription = _settingsService.WatchProperty(
+            o => o.ColorTheme,
+            _ => InitializeTheme()
+        );
     }
 
     private void InitializeTheme()
@@ -86,11 +92,14 @@ public partial class App : Application, IDisposable
             _ => PlatformSettings?.GetColorValues().ThemeVariant ?? PlatformThemeVariant.Light,
         };
 
-        this.LocateMaterialTheme<MaterialThemeBase>().CurrentTheme =
-            actualTheme == PlatformThemeVariant.Light
-                // School palette: calm blue for structure, green for progress and success
-                ? Theme.Create(Theme.Light, Color.Parse("#1F4E9C"), Color.Parse("#0F8A6A"))
-                : Theme.Create(Theme.Dark, Color.Parse("#8AB4F8"), Color.Parse("#34D399"));
+        var isDark = actualTheme != PlatformThemeVariant.Light;
+        var (primary, secondary) = _settingsService.ColorTheme.GetColors(isDark);
+
+        this.LocateMaterialTheme<MaterialThemeBase>().CurrentTheme = Theme.Create(
+            isDark ? Theme.Dark : Theme.Light,
+            primary,
+            secondary
+        );
     }
 
     public override void Initialize()
@@ -138,6 +147,7 @@ public partial class App : Application, IDisposable
         _isDisposed = true;
 
         _eventSubscription.Dispose();
+        _colorThemeSubscription.Dispose();
         _services.Dispose();
     }
 }

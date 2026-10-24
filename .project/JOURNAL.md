@@ -9,3 +9,5 @@
 - 2026-10-24 | implémentation | 10 fonctionnalités livrées sur feature/interface-ecole ; bug corrigé : découpage FFmpeg en échec sur les MP4 avec sous-titres intégrés (-c:s copy)
 - 2026-10-24 | demande | Suppression de l'avertissement « build instable » au démarrage
 - 2026-10-24 | demande | Mises à jour automatiques désactivées (pointaient vers Tyrrrz/YoutubeDownloader)
+- 2026-10-24 | demande | Renommer l'app en « Youtube4School » (titre de fenêtre, nom du bundle macOS ; assembly inchangé)
+- 2026-10-24 | demande | Thèmes de couleur au choix dans les paramètres (Bleu école, Vert nature, Océan, Lavande, Coucher de soleil, Classique), en clair et sombre

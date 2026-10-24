@@ -125,6 +125,25 @@
                             SelectedItem="{Binding Theme}" />
                     </DockPanel>
 
+                    <!--  Color theme  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.ColorThemeTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.ColorThemeLabel}" />
+                        <ComboBox
+                            Width="160"
+                            DockPanel.Dock="Right"
+                            ItemsSource="{Binding AvailableColorThemes}"
+                            SelectedItem="{Binding SelectedColorTheme}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="dialogs:ColorThemeOption">
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </DockPanel>
+
                     <!--  Language  -->
                     <DockPanel
                         Margin="16,8"

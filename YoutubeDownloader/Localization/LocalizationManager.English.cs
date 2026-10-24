@@ -155,6 +155,15 @@ public partial class LocalizationManager
                 "Watch the video here before downloading it (starts at the beginning of the clip, if set)",
             [nameof(PreviewOpenInBrowserButton)] = "Open in browser",
             [nameof(PreviewCloseButton)] = "Close preview",
+            // Color themes
+            [nameof(ColorThemeLabel)] = "Colors",
+            [nameof(ColorThemeTooltip)] = "Color palette of the interface",
+            [nameof(ColorThemeSchool)] = "School blue",
+            [nameof(ColorThemeNature)] = "Nature green",
+            [nameof(ColorThemeOcean)] = "Ocean",
+            [nameof(ColorThemeLavender)] = "Lavender",
+            [nameof(ColorThemeSunset)] = "Sunset",
+            [nameof(ColorThemeClassic)] = "Classic",
             // Settings
             [nameof(SettingsTitle)] = "Settings",
             [nameof(ThemeLabel)] = "Theme",

@@ -12,8 +12,8 @@
 
   <PropertyGroup>
     <MacOSBundleIdentifier>me.tyrrrz.youtubedownloader</MacOSBundleIdentifier>
-    <MacOSBundleName>YTD</MacOSBundleName>
-    <MacOSBundleDisplayName>YoutubeDownloader</MacOSBundleDisplayName>
+    <MacOSBundleName>Youtube4School</MacOSBundleName>
+    <MacOSBundleDisplayName>Youtube4School</MacOSBundleDisplayName>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -24,6 +24,9 @@ public partial class SettingsService()
     public partial ThemeVariant Theme { get; set; }
 
     [ObservableProperty]
+    public partial ColorTheme ColorTheme { get; set; }
+
+    [ObservableProperty]
     public partial string? SchoolName { get; set; }
 
     [ObservableProperty]

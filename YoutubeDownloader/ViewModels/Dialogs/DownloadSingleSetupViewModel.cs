@@ -60,15 +60,23 @@ public partial class DownloadSingleSetupViewModel(
 
         var container = SelectedDownloadOption.Container;
 
-        var filePath = await dialogManager.PromptSaveFilePathAsync(
-            [
-                new FilePickerFileType($"{container.Name} file")
-                {
-                    Patterns = [$"*.{container.Name}"],
-                },
-            ],
-            FileNameTemplate.Apply(settingsService.FileNameTemplate, Video, container)
-        );
+        var fileName = FileNameTemplate.Apply(settingsService.FileNameTemplate, Video, container);
+
+        // When a default download folder is configured (e.g. a shared school drive),
+        // save there directly instead of asking every time
+        var filePath = !string.IsNullOrWhiteSpace(settingsService.DefaultDownloadDirPath)
+            ? Path.EnsureUniqueFilePath(
+                Path.Combine(settingsService.DefaultDownloadDirPath, fileName)
+            )
+            : await dialogManager.PromptSaveFilePathAsync(
+                [
+                    new FilePickerFileType($"{container.Name} file")
+                    {
+                        Patterns = [$"*.{container.Name}"],
+                    },
+                ],
+                fileName
+            );
 
         if (string.IsNullOrWhiteSpace(filePath))
             return;

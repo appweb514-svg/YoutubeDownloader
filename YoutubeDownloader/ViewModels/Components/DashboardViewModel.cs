@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,11 +56,25 @@ public partial class DashboardViewModel : ViewModelBase
                 v => _downloadSemaphore.MaxCount = v,
                 true
             ),
+            _settingsService.WatchProperty(
+                o => o.SchoolName,
+                _ => OnPropertyChanged(nameof(HeaderSubtitle))
+            ),
+            LocalizationManager.WatchProperty(
+                o => o.Language,
+                _ => OnPropertyChanged(nameof(HeaderSubtitle))
+            ),
+            _settingsService.WatchProperty(
+                o => o.DefaultDownloadDirPath,
+                _ => OnPropertyChanged(nameof(HasDefaultDownloadDir))
+            ),
             Progress.WatchProperty(
                 o => o.Current,
                 _ => OnPropertyChanged(nameof(IsProgressIndeterminate))
             )
         );
+
+        Downloads.CollectionChanged += (_, _) => RefreshSummary();
     }
 
     public LocalizationManager LocalizationManager { get; }
@@ -80,6 +95,32 @@ public partial class DashboardViewModel : ViewModelBase
     public partial string? Query { get; set; }
 
     public ObservableCollection<DownloadViewModel> Downloads { get; } = [];
+
+    public string HeaderSubtitle =>
+        !string.IsNullOrWhiteSpace(_settingsService.SchoolName)
+            ? _settingsService.SchoolName
+            : LocalizationManager.AppHeaderSubtitle;
+
+    public bool HasDefaultDownloadDir =>
+        !string.IsNullOrWhiteSpace(_settingsService.DefaultDownloadDirPath);
+
+    [ObservableProperty]
+    public partial int ActiveDownloadsCount { get; private set; }
+
+    [ObservableProperty]
+    public partial int CompletedDownloadsCount { get; private set; }
+
+    [ObservableProperty]
+    public partial int FailedDownloadsCount { get; private set; }
+
+    private void RefreshSummary()
+    {
+        ActiveDownloadsCount = Downloads.Count(d =>
+            d.Status is DownloadStatus.Enqueued or DownloadStatus.Started
+        );
+        CompletedDownloadsCount = Downloads.Count(d => d.Status == DownloadStatus.Completed);
+        FailedDownloadsCount = Downloads.Count(d => d.Status == DownloadStatus.Failed);
+    }
 
     private async Task EnsureFFmpegAsync()
     {
@@ -145,6 +186,26 @@ public partial class DashboardViewModel : ViewModelBase
     private async Task ShowAuthSetupAsync() =>
         await _dialogManager.ShowDialogAsync(_viewModelManager.GetAuthSetupViewModel());
 
+    [RelayCommand]
+    private async Task OpenDefaultDownloadDirAsync()
+    {
+        var dirPath = _settingsService.DefaultDownloadDirPath;
+        if (string.IsNullOrWhiteSpace(dirPath))
+            return;
+
+        try
+        {
+            Directory.CreateDirectory(dirPath);
+            Process.StartShellExecute(dirPath);
+        }
+        catch (Exception ex)
+        {
+            await _dialogManager.ShowDialogAsync(
+                _viewModelManager.GetMessageBoxViewModel(LocalizationManager.ErrorTitle, ex.Message)
+            );
+        }
+    }
+
     private bool CanShowSettings() => !IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanShowSettings))]
@@ -164,6 +225,7 @@ public partial class DashboardViewModel : ViewModelBase
             using var access = await _downloadSemaphore.AcquireAsync(download.CancellationToken);
 
             download.Status = DownloadStatus.Started;
+            RefreshSummary();
 
             var downloadOption =
                 download.DownloadOption
@@ -201,6 +263,7 @@ public partial class DashboardViewModel : ViewModelBase
             }
 
             download.Status = DownloadStatus.Completed;
+            RefreshSummary();
         }
         catch (Exception ex)
         {
@@ -220,6 +283,7 @@ public partial class DashboardViewModel : ViewModelBase
 
             // Short error message for YouTube-related errors, full for others
             download.ErrorMessage = ex is YoutubeExplodeException ? ex.Message : ex.ToString();
+            RefreshSummary();
         }
         finally
         {

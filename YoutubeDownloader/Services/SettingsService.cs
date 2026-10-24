@@ -21,6 +21,12 @@ public partial class SettingsService()
     public partial ThemeVariant Theme { get; set; }
 
     [ObservableProperty]
+    public partial string? SchoolName { get; set; }
+
+    [ObservableProperty]
+    public partial string? DefaultDownloadDirPath { get; set; }
+
+    [ObservableProperty]
     public partial Language Language { get; set; }
 
     [ObservableProperty]

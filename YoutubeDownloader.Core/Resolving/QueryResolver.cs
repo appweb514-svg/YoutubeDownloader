@@ -15,7 +15,10 @@ namespace YoutubeDownloader.Core.Resolving;
 
 public class QueryResolver(IReadOnlyList<Cookie>? initialCookies = null) : IDisposable
 {
-    private readonly YoutubeClient _youtube = new(Http.Client, initialCookies ?? []);
+    private readonly YoutubeClient _youtube = new(
+        Http.Client,
+        ConsentCookie.WithFreshConsent(initialCookies)
+    );
     private readonly bool _isAuthenticated = initialCookies?.Any() == true;
 
     private async Task<QueryResult?> TryResolvePlaylistAsync(

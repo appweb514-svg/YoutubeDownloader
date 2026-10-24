@@ -92,8 +92,7 @@ public partial class DownloadViewModel : ViewModelBase
 
     private bool CanShowFile() =>
         Status == DownloadStatus.Completed
-        // This only works on Windows currently
-        && OperatingSystem.IsWindows();
+        && (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() || OperatingSystem.IsLinux());
 
     [RelayCommand(CanExecute = nameof(CanShowFile))]
     private async Task ShowFileAsync()
@@ -103,8 +102,15 @@ public partial class DownloadViewModel : ViewModelBase
 
         try
         {
-            // Navigate to the file in Windows Explorer
-            Process.Start("explorer", ["/select,", FilePath]);
+            if (OperatingSystem.IsWindows())
+                // Navigate to the file in Windows Explorer
+                Process.Start("explorer", ["/select,", FilePath]);
+            else if (OperatingSystem.IsMacOS())
+                // Reveal the file in Finder
+                Process.Start("open", ["-R", FilePath]);
+            else
+                // No portable way to select a file, so open its folder instead
+                Process.StartShellExecute(Path.GetDirectoryName(FilePath) ?? FilePath);
         }
         catch (Exception ex)
         {

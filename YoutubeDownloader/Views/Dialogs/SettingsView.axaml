@@ -5,7 +5,7 @@
     xmlns:converters="clr-namespace:YoutubeDownloader.Converters"
     xmlns:dialogs="clr-namespace:YoutubeDownloader.ViewModels.Dialogs"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    Width="380"
+    Width="440"
     x:DataType="dialogs:SettingsViewModel">
     <Grid RowDefinitions="Auto,*,Auto">
         <TextBlock
@@ -22,6 +22,78 @@
             BorderThickness="0,1">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                 <StackPanel Orientation="Vertical">
+                    <!--  School  -->
+                    <TextBlock
+                        Margin="16,8,16,4"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryHueMidBrush}"
+                        Text="{Binding LocalizationManager.SchoolSectionLabel}" />
+
+                    <!--  School name  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.SchoolNameTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.SchoolNameLabel}" />
+                        <TextBox
+                            Width="190"
+                            Height="20"
+                            DockPanel.Dock="Right"
+                            FontSize="13"
+                            PlaceholderText="{Binding LocalizationManager.SchoolNamePlaceholderText}"
+                            Text="{Binding SchoolName}"
+                            Theme="{DynamicResource CompactTextBox}" />
+                    </DockPanel>
+
+                    <!--  Default download folder  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.DefaultDownloadDirTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.DefaultDownloadDirLabel}" />
+                        <TextBox
+                            Width="190"
+                            Height="20"
+                            DockPanel.Dock="Right"
+                            FontSize="13"
+                            PlaceholderText="{Binding LocalizationManager.DefaultDownloadDirPlaceholderText}"
+                            Text="{Binding DefaultDownloadDirPath}"
+                            Theme="{DynamicResource CompactTextBox}">
+                            <TextBox.InnerRightContent>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button
+                                        Padding="4"
+                                        Command="{Binding ResetDefaultDownloadDirPathCommand}"
+                                        IsEnabled="{Binding DefaultDownloadDirPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                        Theme="{DynamicResource MaterialFlatButton}">
+                                        <materialIcons:MaterialIcon
+                                            Width="14"
+                                            Height="14"
+                                            Kind="Close" />
+                                    </Button>
+                                    <Button
+                                        Padding="4"
+                                        Command="{Binding BrowseDefaultDownloadDirPathCommand}"
+                                        Theme="{DynamicResource MaterialFlatButton}">
+                                        <materialIcons:MaterialIcon
+                                            Width="14"
+                                            Height="14"
+                                            Kind="FolderOpen" />
+                                    </Button>
+                                </StackPanel>
+                            </TextBox.InnerRightContent>
+                        </TextBox>
+                    </DockPanel>
+
+                    <!--  General  -->
+                    <TextBlock
+                        Margin="16,16,16,4"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryHueMidBrush}"
+                        Text="{Binding LocalizationManager.GeneralSectionLabel}" />
+
                     <!--  Theme  -->
                     <DockPanel
                         Margin="16,8"

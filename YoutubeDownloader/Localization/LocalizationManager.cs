@@ -104,6 +104,39 @@ public partial class LocalizationManager
     public string CancelDownloadTooltip => Get();
     public string RestartDownloadTooltip => Get();
 
+    // ---- School ----
+
+    public string AppHeaderTitle => Get();
+    public string AppHeaderSubtitle => Get();
+    public string AddToLibraryButton => Get();
+    public string AccountButton => Get();
+    public string SettingsButton => Get();
+    public string SchoolQueryPlaceholderText => Get();
+    public string StepCopyTitle => Get();
+    public string StepCopyText => Get();
+    public string StepPasteTitle => Get();
+    public string StepPasteText => Get();
+    public string StepDownloadTitle => Get();
+    public string StepDownloadText => Get();
+    public string CopyrightNoticeTitle => Get();
+    public string CopyrightNoticeMessage => Get();
+    public string DownloadsListTitle => Get();
+    public string SummaryActiveLabel => Get();
+    public string SummaryCompletedLabel => Get();
+    public string SummaryFailedLabel => Get();
+    public string RetryFailedButton => Get();
+    public string ClearListButton => Get();
+    public string CancelAllButton => Get();
+    public string OpenLibraryFolderButton => Get();
+    public string SchoolSectionLabel => Get();
+    public string SchoolNameLabel => Get();
+    public string SchoolNameTooltip => Get();
+    public string SchoolNamePlaceholderText => Get();
+    public string DefaultDownloadDirLabel => Get();
+    public string DefaultDownloadDirTooltip => Get();
+    public string DefaultDownloadDirPlaceholderText => Get();
+    public string GeneralSectionLabel => Get();
+
     // ---- Settings ----
 
     public string SettingsTitle => Get();

@@ -84,8 +84,9 @@ public partial class App : Application, IDisposable
 
         this.LocateMaterialTheme<MaterialThemeBase>().CurrentTheme =
             actualTheme == PlatformThemeVariant.Light
-                ? Theme.Create(Theme.Light, Color.Parse("#343838"), Color.Parse("#F9A825"))
-                : Theme.Create(Theme.Dark, Color.Parse("#E8E8E8"), Color.Parse("#F9A825"));
+                // School palette: calm blue for structure, green for progress and success
+                ? Theme.Create(Theme.Light, Color.Parse("#1F4E9C"), Color.Parse("#0F8A6A"))
+                : Theme.Create(Theme.Dark, Color.Parse("#8AB4F8"), Color.Parse("#34D399"));
     }
 
     public override void Initialize()

@@ -40,6 +40,21 @@ public partial class SettingsViewModel : DialogViewModelBase
         set => _settingsService.Theme = value;
     }
 
+    public string? SchoolName
+    {
+        get => _settingsService.SchoolName;
+        set => _settingsService.SchoolName = !string.IsNullOrWhiteSpace(value) ? value : null;
+    }
+
+    public string? DefaultDownloadDirPath
+    {
+        get => _settingsService.DefaultDownloadDirPath;
+        set =>
+            _settingsService.DefaultDownloadDirPath = !string.IsNullOrWhiteSpace(value)
+                ? value
+                : null;
+    }
+
     public IReadOnlyList<Language> AvailableLanguages { get; } = Enum.GetValues<Language>();
 
     public Language Language
@@ -126,6 +141,20 @@ public partial class SettingsViewModel : DialogViewModelBase
 
     [RelayCommand]
     private void ResetFFmpegFilePath() => FFmpegFilePath = null;
+
+    [RelayCommand]
+    private async Task BrowseDefaultDownloadDirPathAsync()
+    {
+        var dirPath = await _dialogManager.PromptDirectoryPathAsync(DefaultDownloadDirPath ?? "");
+
+        if (string.IsNullOrWhiteSpace(dirPath))
+            return;
+
+        DefaultDownloadDirPath = dirPath;
+    }
+
+    [RelayCommand]
+    private void ResetDefaultDownloadDirPath() => DefaultDownloadDirPath = null;
 
     protected override void Dispose(bool disposing)
     {

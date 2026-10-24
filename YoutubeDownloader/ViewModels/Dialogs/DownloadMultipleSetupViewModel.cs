@@ -72,7 +72,9 @@ public partial class DownloadMultipleSetupViewModel(
     [RelayCommand(CanExecute = nameof(CanConfirm))]
     private async Task ConfirmAsync()
     {
-        var dirPath = await dialogManager.PromptDirectoryPathAsync();
+        var dirPath = !string.IsNullOrWhiteSpace(settingsService.DefaultDownloadDirPath)
+            ? settingsService.DefaultDownloadDirPath
+            : await dialogManager.PromptDirectoryPathAsync();
         if (string.IsNullOrWhiteSpace(dirPath))
             return;
 

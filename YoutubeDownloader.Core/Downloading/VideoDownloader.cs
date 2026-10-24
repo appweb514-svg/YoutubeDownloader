@@ -15,7 +15,10 @@ namespace YoutubeDownloader.Core.Downloading;
 
 public class VideoDownloader(IReadOnlyList<Cookie>? initialCookies = null) : IDisposable
 {
-    private readonly YoutubeClient _youtube = new(Http.Client, initialCookies ?? []);
+    private readonly YoutubeClient _youtube = new(
+        Http.Client,
+        ConsentCookie.WithFreshConsent(initialCookies)
+    );
 
     public async Task<IReadOnlyList<VideoDownloadOption>> GetDownloadOptionsAsync(
         VideoId videoId,

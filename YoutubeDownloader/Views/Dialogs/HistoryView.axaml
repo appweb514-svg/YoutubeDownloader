@@ -1,0 +1,86 @@
+<UserControl
+    x:Class="YoutubeDownloader.Views.Dialogs.HistoryView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dialogs="clr-namespace:YoutubeDownloader.ViewModels.Dialogs"
+    xmlns:services="clr-namespace:YoutubeDownloader.Services"
+    Width="860"
+    Height="520"
+    x:Name="UserControl"
+    x:DataType="dialogs:HistoryViewModel">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!--  Title  -->
+        <TextBlock
+            Grid.Row="0"
+            Margin="16"
+            FontSize="19"
+            FontWeight="Light"
+            Text="{Binding LocalizationManager.HistoryTitle}" />
+
+        <!--  Entries  -->
+        <Border
+            Grid.Row="1"
+            BorderBrush="{DynamicResource MaterialDividerBrush}"
+            BorderThickness="0,1">
+            <Panel>
+                <TextBlock
+                    Margin="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding IsEmpty}"
+                    Opacity="0.7"
+                    Text="{Binding LocalizationManager.HistoryEmptyText}" />
+
+                <DataGrid IsVisible="{Binding !IsEmpty}" ItemsSource="{Binding Entries}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="Auto"
+                            x:DataType="services:HistoryEntry"
+                            Binding="{Binding Date}"
+                            Header="{Binding #UserControl.DataContext.LocalizationManager.HistoryDateColumnHeader}" />
+                        <DataGridTextColumn
+                            Width="*"
+                            x:DataType="services:HistoryEntry"
+                            Binding="{Binding Title}"
+                            Header="{Binding #UserControl.DataContext.LocalizationManager.HistoryTitleColumnHeader}" />
+                        <DataGridTextColumn
+                            Width="Auto"
+                            x:DataType="services:HistoryEntry"
+                            Binding="{Binding Status}"
+                            Header="{Binding #UserControl.DataContext.LocalizationManager.HistoryStatusColumnHeader}" />
+                        <DataGridTextColumn
+                            Width="Auto"
+                            x:DataType="services:HistoryEntry"
+                            Binding="{Binding Clip}"
+                            Header="{Binding #UserControl.DataContext.LocalizationManager.ClipLabel}" />
+                        <DataGridTextColumn
+                            Width="Auto"
+                            x:DataType="services:HistoryEntry"
+                            Binding="{Binding UserName}"
+                            Header="{Binding #UserControl.DataContext.LocalizationManager.HistoryUserColumnHeader}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Panel>
+        </Border>
+
+        <!--  Buttons  -->
+        <UniformGrid
+            Grid.Row="2"
+            Margin="8"
+            Columns="2">
+            <Button
+                Margin="8"
+                Command="{Binding OpenCsvFileCommand}"
+                Content="{Binding LocalizationManager.HistoryOpenCsvButton}"
+                IsEnabled="{Binding !IsEmpty}"
+                Theme="{DynamicResource MaterialOutlineButton}" />
+            <Button
+                Margin="8"
+                Command="{Binding CloseCommand}"
+                Content="{Binding LocalizationManager.CloseButton}"
+                IsCancel="True"
+                IsDefault="True"
+                Theme="{DynamicResource MaterialOutlineButton}" />
+        </UniformGrid>
+    </Grid>
+</UserControl>

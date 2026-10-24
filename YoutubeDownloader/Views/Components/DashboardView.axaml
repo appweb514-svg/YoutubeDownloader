@@ -66,7 +66,7 @@
             Background="{DynamicResource PrimaryHueMidBrush}"
             DockPanel.Dock="Top"
             Orientation="Vertical">
-            <Grid Margin="20,16,12,0" ColumnDefinitions="Auto,*,Auto,Auto">
+            <Grid Margin="20,16,12,0" ColumnDefinitions="Auto,*,Auto,Auto,Auto">
                 <!--  Brand  -->
                 <materialIcons:MaterialIcon
                     Grid.Column="0"
@@ -93,9 +93,26 @@
                         TextTrimming="CharacterEllipsis" />
                 </StackPanel>
 
-                <!--  Auth button  -->
+                <!--  History button  -->
                 <Button
                     Grid.Column="2"
+                    Margin="0,0,4,0"
+                    Classes="header"
+                    Theme="{DynamicResource MaterialFlatButton}"
+                    Command="{Binding ShowHistoryCommand}"
+                    ToolTip.Tip="{Binding LocalizationManager.HistoryTooltip}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="History" />
+                        <TextBlock VerticalAlignment="Center" Text="{Binding LocalizationManager.HistoryButton}" />
+                    </StackPanel>
+                </Button>
+
+                <!--  Auth button  -->
+                <Button
+                    Grid.Column="3"
                     Classes="header"
                     Theme="{DynamicResource MaterialFlatButton}"
                     Command="{Binding ShowAuthSetupCommand}"
@@ -111,7 +128,7 @@
 
                 <!--  Settings button  -->
                 <Button
-                    Grid.Column="3"
+                    Grid.Column="4"
                     Margin="4,0,0,0"
                     Classes="header"
                     Theme="{DynamicResource MaterialFlatButton}"
@@ -132,7 +149,7 @@
                 Margin="20,16,20,20"
                 Padding="6"
                 Classes="card">
-                <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                     <TextBox
                         x:Name="QueryTextBox"
                         Grid.Column="0"
@@ -176,6 +193,64 @@
                                 Text="{Binding LocalizationManager.AddToLibraryButton}" />
                         </StackPanel>
                     </Button>
+
+                    <!--  Options  -->
+                    <WrapPanel
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Margin="6,6,6,2"
+                        Orientation="Horizontal">
+                        <!--  Category (class / subject sub-folder)  -->
+                        <StackPanel
+                            Margin="0,0,20,0"
+                            IsVisible="{Binding HasDefaultDownloadDir}"
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            ToolTip.Tip="{Binding LocalizationManager.CategoryTooltip}">
+                            <materialIcons:MaterialIcon
+                                Width="20"
+                                Height="20"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                Kind="FolderPlusOutline" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding LocalizationManager.CategoryLabel}" />
+                            <AutoCompleteBox
+                                Width="220"
+                                VerticalAlignment="Center"
+                                FilterMode="ContainsOrdinal"
+                                ItemsSource="{Binding RecentCategories}"
+                                MinimumPrefixLength="0"
+                                Text="{Binding CurrentCategory, Mode=TwoWay}"
+                                PlaceholderText="{Binding LocalizationManager.CategoryPlaceholderText}" />
+                        </StackPanel>
+
+                        <!--  Import a list of links  -->
+                        <Button
+                            Margin="0,0,20,0"
+                            Classes="toolbar"
+                            Command="{Binding ImportLinkListCommand}"
+                            Theme="{DynamicResource MaterialFlatButton}"
+                            ToolTip.Tip="{Binding LocalizationManager.ImportLinkListTooltip}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <materialIcons:MaterialIcon Kind="FileDocumentArrowRightOutline" />
+                                <TextBlock Text="{Binding LocalizationManager.ImportLinkListButton}" />
+                            </StackPanel>
+                        </Button>
+
+                        <!--  Deferred downloads  -->
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            ToolTip.Tip="{Binding LocalizationManager.DeferredModeTooltip}">
+                            <ToggleSwitch
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding IsDeferredMode}"
+                                OffContent=""
+                                OnContent="" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding DeferredModeText}" />
+                        </StackPanel>
+                    </WrapPanel>
                 </Grid>
             </Border>
 
@@ -339,6 +414,13 @@
                         </TextBlock>
                         <TextBlock
                             VerticalAlignment="Center"
+                            Foreground="{DynamicResource PrimaryHueMidBrush}"
+                            IsVisible="{Binding !!ScheduledDownloadsCount}">
+                            <Run FontWeight="SemiBold" Text="{Binding ScheduledDownloadsCount}" />
+                            <Run Text="{Binding LocalizationManager.SummaryScheduledLabel}" />
+                        </TextBlock>
+                        <TextBlock
+                            VerticalAlignment="Center"
                             Foreground="{DynamicResource FailedBrush}"
                             IsVisible="{Binding !!FailedDownloadsCount}">
                             <Run FontWeight="SemiBold" Text="{Binding FailedDownloadsCount}" />
@@ -383,7 +465,7 @@
                             Classes="toolbar"
                             Theme="{DynamicResource MaterialFlatButton}"
                             Command="{Binding CancelAllDownloadsCommand}"
-                            IsVisible="{Binding !!ActiveDownloadsCount}">
+                            IsVisible="{Binding HasCancelableDownloads}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <materialIcons:MaterialIcon Kind="CloseCircleOutline" />
                                 <TextBlock Text="{Binding LocalizationManager.CancelAllButton}" />
@@ -427,12 +509,20 @@
                                                 Text="{Binding Video.Title}"
                                                 TextTrimming="CharacterEllipsis"
                                                 ToolTip.Tip="{Binding Video.Title}" />
-                                            <TextBlock
-                                                FontSize="12"
-                                                Opacity="0.65"
-                                                Text="{Binding FileName}"
-                                                TextTrimming="CharacterEllipsis"
-                                                ToolTip.Tip="{Binding FilePath}" />
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock
+                                                    FontSize="12"
+                                                    Opacity="0.65"
+                                                    Text="{Binding FileName}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTip.Tip="{Binding FilePath}" />
+                                                <TextBlock
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                    IsVisible="{Binding HasClip}">
+                                                    <Run Text="{Binding LocalizationManager.ClipLabel}" /><Run Text=" " /><Run Text="{Binding ClipText}" />
+                                                </TextBlock>
+                                            </StackPanel>
 
                                             <ProgressBar
                                                 Height="6"
@@ -450,6 +540,7 @@
                                                 Classes.enqueued="{Binding Status, Converter={x:Static converters:EqualityConverter.IsEqual}, ConverterParameter={x:Static components:DownloadStatus.Enqueued}}"
                                                 Classes.failed="{Binding Status, Converter={x:Static converters:EqualityConverter.IsEqual}, ConverterParameter={x:Static components:DownloadStatus.Failed}}"
                                                 Classes.started="{Binding Status, Converter={x:Static converters:EqualityConverter.IsEqual}, ConverterParameter={x:Static components:DownloadStatus.Started}}"
+                                                Classes.scheduled="{Binding Status, Converter={x:Static converters:EqualityConverter.IsEqual}, ConverterParameter={x:Static components:DownloadStatus.Scheduled}}"
                                                 PointerReleased="StatusTextBlock_OnPointerReleased"
                                                 TextTrimming="CharacterEllipsis">
                                                 <TextBlock.Styles>
@@ -457,6 +548,10 @@
                                                         <Style Selector="^.enqueued">
                                                             <Setter Property="Opacity" Value="0.7" />
                                                             <Setter Property="Text" Value="{Binding LocalizationManager.DownloadStatusEnqueued}" />
+                                                        </Style>
+                                                        <Style Selector="^.scheduled">
+                                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
+                                                            <Setter Property="Text" Value="{Binding ScheduledStatusText}" />
                                                         </Style>
                                                         <Style Selector="^.started">
                                                             <Setter Property="Text" Value="{Binding Progress.Current}" />

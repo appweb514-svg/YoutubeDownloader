@@ -29,5 +29,17 @@ public static class VideoQualityPreferenceExtensions
                 VideoQualityPreference.Highest => "Highest quality",
                 _ => throw new ArgumentOutOfRangeException(nameof(preference)),
             };
+
+        // Maximum video height allowed by this preference when used as a cap, or null if unlimited
+        public int? TryGetMaxHeight() =>
+            preference switch
+            {
+                VideoQualityPreference.Lowest => 144,
+                VideoQualityPreference.UpTo360p => 360,
+                VideoQualityPreference.UpTo480p => 480,
+                VideoQualityPreference.UpTo720p => 720,
+                VideoQualityPreference.UpTo1080p => 1080,
+                _ => null,
+            };
     }
 }

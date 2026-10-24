@@ -24,7 +24,9 @@ public class ViewModelManager(IServiceProvider services, LocalizationManager loc
     public DownloadViewModel GetDownloadViewModel(
         IVideo video,
         VideoDownloadOption downloadOption,
-        string filePath
+        string filePath,
+        TimeSpan? clipStart = null,
+        TimeSpan? clipEnd = null
     )
     {
         var viewModel = services.GetRequiredService<DownloadViewModel>();
@@ -32,6 +34,8 @@ public class ViewModelManager(IServiceProvider services, LocalizationManager loc
         viewModel.Video = video;
         viewModel.DownloadOption = downloadOption;
         viewModel.FilePath = filePath;
+        viewModel.ClipStart = clipStart;
+        viewModel.ClipEnd = clipEnd;
 
         return viewModel;
     }
@@ -39,7 +43,9 @@ public class ViewModelManager(IServiceProvider services, LocalizationManager loc
     public DownloadViewModel GetDownloadViewModel(
         IVideo video,
         VideoDownloadPreference downloadPreference,
-        string filePath
+        string filePath,
+        TimeSpan? clipStart = null,
+        TimeSpan? clipEnd = null
     )
     {
         var viewModel = services.GetRequiredService<DownloadViewModel>();
@@ -47,6 +53,18 @@ public class ViewModelManager(IServiceProvider services, LocalizationManager loc
         viewModel.Video = video;
         viewModel.DownloadPreference = downloadPreference;
         viewModel.FilePath = filePath;
+        viewModel.ClipStart = clipStart;
+        viewModel.ClipEnd = clipEnd;
+
+        return viewModel;
+    }
+
+    public VideoPreviewViewModel GetVideoPreviewViewModel(VideoId videoId, TimeSpan? start)
+    {
+        var viewModel = services.GetRequiredService<VideoPreviewViewModel>();
+
+        viewModel.VideoId = videoId;
+        viewModel.Start = start;
 
         return viewModel;
     }
@@ -81,6 +99,9 @@ public class ViewModelManager(IServiceProvider services, LocalizationManager loc
         return viewModel;
     }
 
+    public HistoryViewModel GetHistoryViewModel() =>
+        services.GetRequiredService<HistoryViewModel>();
+
     public MessageBoxViewModel GetMessageBoxViewModel(
         string title,
         string message,
@@ -100,6 +121,9 @@ public class ViewModelManager(IServiceProvider services, LocalizationManager loc
 
     public MessageBoxViewModel GetMessageBoxViewModel(string title, string message) =>
         GetMessageBoxViewModel(title, message, localizationManager.CloseButton, null);
+
+    public PinPromptViewModel GetPinPromptViewModel() =>
+        services.GetRequiredService<PinPromptViewModel>();
 
     public SettingsViewModel GetSettingsViewModel() =>
         services.GetRequiredService<SettingsViewModel>();

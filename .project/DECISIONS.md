@@ -14,3 +14,16 @@
 - Contexte : YoutubeExplode 6.6.2 envoie un cookie de consentement daté du 2025-10-03, expiré après 13 mois → redirection vers consent.youtube.com.
 - Décision : `ConsentCookie.WithFreshConsent` génère un cookie à la date du jour, ajouté avant les cookies utilisateur (il remplace celui de la bibliothèque). Ne compte pas comme authentification.
 - Conséquences : à retirer quand une version de YoutubeExplode intégrant Tyrrrz/YoutubeExplode#975 sera publiée.
+
+## 2026-10-24 — Les 10 fonctionnalités « école »
+- Contexte : rendre l'outil adapté à un usage en classe et administrable par l'établissement (détail : PLAN-fonctionnalites-ecole.md).
+- Décisions :
+  - Extrait : découpage par FFmpeg après téléchargement, avec réencodage (précision à l'image près) et copie des pistes de sous-titres.
+  - Préréglage classe : MP4 ≤ 720p, applicable par défaut.
+  - Sous-titres : filtre par langue (défaut « fr ») et export .srt optionnel (non décalé pour un extrait).
+  - Rangement par classe/matière sous le dossier par défaut, avec liste de catégories récentes.
+  - Fiche de source `.source.txt` à côté de chaque vidéo (activée par défaut).
+  - Mode administré : code PIN (SHA-256 salé) devant Paramètres/Compte, plafond de qualité ; déploiement via `YOUTUBEDOWNLOADER_SETTINGS_PATH`.
+  - Import de listes txt/csv, historique CSV (anti-formules Excel), limite de débit globale (seau à jetons dans un DelegatingHandler), file programmée à une heure donnée.
+  - Aperçu : lecteur youtube-nocookie dans le dialogue de téléchargement (un seul dialogue à la fois dans DialogManager).
+- Conséquences : le PIN protège l'interface, pas le fichier de réglages ; le découpage allonge le temps de traitement sans progression affichée ; l'aperçu peut être refusé par YouTube (erreur 153) → bouton « Ouvrir dans le navigateur ».

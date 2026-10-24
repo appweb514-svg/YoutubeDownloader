@@ -42,15 +42,19 @@ public partial class App : Application, IDisposable
         // Services
         services.AddSingleton<SettingsService>();
         services.AddSingleton<UpdateService>();
+        services.AddSingleton<HistoryService>();
 
         // View models
         services.AddTransient<MainViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<DownloadViewModel>();
+        services.AddTransient<VideoPreviewViewModel>();
         services.AddTransient<AuthSetupViewModel>();
         services.AddTransient<DownloadMultipleSetupViewModel>();
         services.AddTransient<DownloadSingleSetupViewModel>();
+        services.AddTransient<HistoryViewModel>();
         services.AddTransient<MessageBoxViewModel>();
+        services.AddTransient<PinPromptViewModel>();
         services.AddTransient<SettingsViewModel>();
 
         _services = services.BuildServiceProvider(true);

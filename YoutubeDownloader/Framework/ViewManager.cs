@@ -16,10 +16,13 @@ public partial class ViewManager
         {
             MainViewModel => new MainView(),
             DashboardViewModel => new DashboardView(),
+            VideoPreviewViewModel => new VideoPreviewView(),
             AuthSetupViewModel => new AuthSetupView(),
             DownloadMultipleSetupViewModel => new DownloadMultipleSetupView(),
             DownloadSingleSetupViewModel => new DownloadSingleSetupView(),
+            HistoryViewModel => new HistoryView(),
             MessageBoxViewModel => new MessageBoxView(),
+            PinPromptViewModel => new PinPromptView(),
             SettingsViewModel => new SettingsView(),
             _ => null,
         };

@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PowerKit.Extensions;
+using YoutubeDownloader.Core.Downloading;
 using YoutubeDownloader.Framework;
 using YoutubeDownloader.Localization;
 using YoutubeDownloader.Services;
+using YoutubeDownloader.Utils;
 
 namespace YoutubeDownloader.ViewModels.Dialogs;
 
@@ -55,6 +59,36 @@ public partial class SettingsViewModel : DialogViewModelBase
                 : null;
     }
 
+    public bool IsClassPresetDefault
+    {
+        get => _settingsService.IsClassPresetDefault;
+        set => _settingsService.IsClassPresetDefault = value;
+    }
+
+    public bool ShouldWriteSourceFile
+    {
+        get => _settingsService.ShouldWriteSourceFile;
+        set => _settingsService.ShouldWriteSourceFile = value;
+    }
+
+    public bool IsAdminPinSet => _settingsService.IsAdminPinSet;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetAdminPinCommand))]
+    public partial string? NewAdminPin { get; set; }
+
+    public IReadOnlyList<VideoQualityPreference> AvailableMaxVideoQualities { get; } =
+        Enum.GetValues<VideoQualityPreference>()
+            .Where(p => p != VideoQualityPreference.Lowest)
+            .Reverse()
+            .ToArray();
+
+    public VideoQualityPreference MaxVideoQuality
+    {
+        get => _settingsService.MaxVideoQuality;
+        set => _settingsService.MaxVideoQuality = value;
+    }
+
     public IReadOnlyList<Language> AvailableLanguages { get; } = Enum.GetValues<Language>();
 
     public Language Language
@@ -96,6 +130,18 @@ public partial class SettingsViewModel : DialogViewModelBase
         set => _settingsService.ShouldInjectSubtitles = value;
     }
 
+    public bool ShouldSaveSubtitleFiles
+    {
+        get => _settingsService.ShouldSaveSubtitleFiles;
+        set => _settingsService.ShouldSaveSubtitleFiles = value;
+    }
+
+    public string PreferredSubtitleLanguage
+    {
+        get => _settingsService.PreferredSubtitleLanguage;
+        set => _settingsService.PreferredSubtitleLanguage = value?.Trim() ?? "";
+    }
+
     public bool ShouldInjectTags
     {
         get => _settingsService.ShouldInjectTags;
@@ -119,6 +165,33 @@ public partial class SettingsViewModel : DialogViewModelBase
         get => _settingsService.ParallelLimit;
         set => _settingsService.ParallelLimit = Math.Clamp(value, 1, 10);
     }
+
+    public int MaxDownloadRateKBps
+    {
+        get => _settingsService.MaxDownloadRateKBps;
+        set => _settingsService.MaxDownloadRateKBps = Math.Max(0, value);
+    }
+
+    public string ScheduledStartTime
+    {
+        get => _settingsService.ScheduledStartTime;
+        set =>
+            _settingsService.ScheduledStartTime = ScheduleTime.TryParse(value) is { } time
+                ? ScheduleTime.Format(time)
+                : value;
+    }
+
+    private bool CanSetAdminPin() => NewAdminPin?.Trim().Length >= 4;
+
+    [RelayCommand(CanExecute = nameof(CanSetAdminPin))]
+    private void SetAdminPin()
+    {
+        _settingsService.SetAdminPin(NewAdminPin?.Trim());
+        NewAdminPin = null;
+    }
+
+    [RelayCommand]
+    private void RemoveAdminPin() => _settingsService.SetAdminPin(null);
 
     [RelayCommand]
     private async Task BrowseFFmpegFilePathAsync()

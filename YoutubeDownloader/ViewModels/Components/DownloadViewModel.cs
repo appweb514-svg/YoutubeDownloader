@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using PowerKit.Extensions;
 using YoutubeDownloader.Core.Downloading;
 using YoutubeDownloader.Framework;
 using YoutubeDownloader.Localization;
+using YoutubeDownloader.Utils;
 using YoutubeDownloader.Utils.Extensions;
 using YoutubeExplode.Videos;
 
@@ -59,6 +61,20 @@ public partial class DownloadViewModel : ViewModelBase
     public partial string? FilePath { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasClip))]
+    [NotifyPropertyChangedFor(nameof(ClipText))]
+    public partial TimeSpan? ClipStart { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasClip))]
+    [NotifyPropertyChangedFor(nameof(ClipText))]
+    public partial TimeSpan? ClipEnd { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ScheduledStatusText))]
+    public partial DateTimeOffset? ScheduledAt { get; set; }
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsCanceledOrFailed))]
     [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     [NotifyCanExecuteChangedFor(nameof(ShowFileCommand))]
@@ -77,9 +93,22 @@ public partial class DownloadViewModel : ViewModelBase
 
     public bool IsProgressIndeterminate => Progress.Current.Fraction is <= 0 or >= 1;
 
+    public bool HasClip => ClipStart is not null || ClipEnd is not null;
+
+    public string? ClipText => ClipTime.FormatRange(ClipStart, ClipEnd);
+
+    public string? ScheduledStatusText =>
+        ScheduledAt is { } scheduledAt
+            ? string.Format(
+                LocalizationManager.DownloadStatusScheduled,
+                scheduledAt.ToString("HH:mm", CultureInfo.InvariantCulture)
+            )
+            : null;
+
     public bool IsCanceledOrFailed => Status is DownloadStatus.Canceled or DownloadStatus.Failed;
 
-    private bool CanCancel() => Status is DownloadStatus.Enqueued or DownloadStatus.Started;
+    private bool CanCancel() =>
+        Status is DownloadStatus.Scheduled or DownloadStatus.Enqueued or DownloadStatus.Started;
 
     [RelayCommand(CanExecute = nameof(CanCancel))]
     private void Cancel()

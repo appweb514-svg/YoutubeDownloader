@@ -1,0 +1,72 @@
+<UserControl
+    x:Class="YoutubeDownloader.Views.Dialogs.PinPromptView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dialogs="clr-namespace:YoutubeDownloader.ViewModels.Dialogs"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    Width="360"
+    x:DataType="dialogs:PinPromptViewModel"
+    Loaded="UserControl_OnLoaded">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!--  Title  -->
+        <TextBlock
+            Grid.Row="0"
+            Margin="16"
+            FontSize="19"
+            FontWeight="Light"
+            Text="{Binding LocalizationManager.PinPromptTitle}" />
+
+        <!--  PIN  -->
+        <Border
+            Grid.Row="1"
+            Padding="16"
+            BorderBrush="{DynamicResource MaterialDividerBrush}"
+            BorderThickness="0,1">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <materialIcons:MaterialIcon
+                        Width="24"
+                        Height="24"
+                        Foreground="{DynamicResource PrimaryHueMidBrush}"
+                        Kind="LockOutline" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{Binding LocalizationManager.PinPromptMessage}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+                <TextBox
+                    x:Name="PinTextBox"
+                    PasswordChar="●"
+                    PlaceholderText="{Binding LocalizationManager.PinPlaceholderText}"
+                    Text="{Binding Pin}" />
+                <TextBlock
+                    FontSize="12"
+                    IsVisible="{Binding IsPinWrong}"
+                    Text="{Binding LocalizationManager.PinWrongMessage}">
+                    <TextBlock.Foreground>
+                        <SolidColorBrush Color="{DynamicResource MaterialValidationErrorColor}" />
+                    </TextBlock.Foreground>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!--  Buttons  -->
+        <UniformGrid
+            Grid.Row="2"
+            Margin="8"
+            Columns="2">
+            <Button
+                Margin="8"
+                Command="{Binding ConfirmCommand}"
+                Content="{Binding LocalizationManager.UnlockButton}"
+                IsDefault="True"
+                Theme="{DynamicResource MaterialOutlineButton}" />
+            <Button
+                Margin="8"
+                Command="{Binding CloseCommand}"
+                Content="{Binding LocalizationManager.CancelButton}"
+                IsCancel="True"
+                Theme="{DynamicResource MaterialOutlineButton}" />
+        </UniformGrid>
+    </Grid>
+</UserControl>

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -150,6 +152,100 @@ public static class FFmpeg
             // Clean up the temporary archive
             if (File.Exists(archiveFilePath))
                 File.Delete(archiveFilePath);
+        }
+    }
+
+    public static async Task TrimAsync(
+        string ffmpegPath,
+        string inputFilePath,
+        string outputFilePath,
+        TimeSpan? start,
+        TimeSpan? end,
+        CancellationToken cancellationToken = default
+    )
+    {
+        static string FormatTime(TimeSpan time) =>
+            time.TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture);
+
+        var startInfo = new ProcessStartInfo(ffmpegPath)
+        {
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        startInfo.ArgumentList.Add("-hide_banner");
+        startInfo.ArgumentList.Add("-nostdin");
+        startInfo.ArgumentList.Add("-y");
+
+        // Input seeking: '-to' is then measured on the input timeline, like '-ss'
+        if (start is { } startTime && startTime > TimeSpan.Zero)
+        {
+            startInfo.ArgumentList.Add("-ss");
+            startInfo.ArgumentList.Add(FormatTime(startTime));
+        }
+
+        if (end is { } endTime)
+        {
+            startInfo.ArgumentList.Add("-to");
+            startInfo.ArgumentList.Add(FormatTime(endTime));
+        }
+
+        startInfo.ArgumentList.Add("-i");
+        startInfo.ArgumentList.Add(inputFilePath);
+
+        // Keep every video, audio and subtitle stream (e.g. alternative audio languages)
+        foreach (var map in new[] { "0:v?", "0:a?", "0:s?" })
+        {
+            startInfo.ArgumentList.Add("-map");
+            startInfo.ArgumentList.Add(map);
+        }
+
+        // FFmpeg has no default encoder for text subtitles in MP4 (mov_text), so copy them as is
+        startInfo.ArgumentList.Add("-c:s");
+        startInfo.ArgumentList.Add("copy");
+
+        startInfo.ArgumentList.Add(outputFilePath);
+
+        using var process =
+            Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to start FFmpeg.");
+
+        var stdOutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var stdErrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                process.Kill(true);
+            }
+            catch
+            {
+                // Process may have already exited
+            }
+
+            throw;
+        }
+
+        await stdOutTask;
+        var stdErr = await stdErrTask;
+
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException(
+                $"FFmpeg failed to trim the video (exit code {process.ExitCode})."
+                    + Environment.NewLine
+                    + string.Join(
+                        Environment.NewLine,
+                        stdErr.Split('\n', StringSplitOptions.RemoveEmptyEntries).TakeLast(10)
+                    )
+            );
         }
     }
 }

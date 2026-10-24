@@ -44,26 +44,6 @@ public partial class MainViewModel(
             Process.StartShellExecute("https://tyrrrz.me/ukraine?source=youtubedownloader");
     }
 
-    private async Task ShowDevelopmentBuildMessageAsync()
-    {
-        if (!Program.IsDevelopmentBuild)
-            return;
-
-        // If debugging, the user is likely a developer
-        if (Debugger.IsAttached)
-            return;
-
-        var dialog = viewModelManager.GetMessageBoxViewModel(
-            localizationManager.UnstableBuildTitle,
-            string.Format(localizationManager.UnstableBuildMessage, Program.Name),
-            localizationManager.SeeReleasesButton,
-            localizationManager.CloseButton
-        );
-
-        if (await dialogManager.ShowDialogAsync(dialog) == true)
-            Process.StartShellExecute(Program.ProjectReleasesUrl);
-    }
-
     private async Task CheckForUpdatesAsync()
     {
         try
@@ -103,7 +83,6 @@ public partial class MainViewModel(
     public override async Task InitializeAsync()
     {
         await ShowUkraineSupportMessageAsync();
-        await ShowDevelopmentBuildMessageAsync();
         await CheckForUpdatesAsync();
     }
 

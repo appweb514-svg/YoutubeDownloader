@@ -7,3 +7,4 @@
 - 2026-10-24 | PR | Draft appweb514-svg/YoutubeDownloader#1 (feature/interface-ecole → prime) : interface école + correctif SOCS — https://github.com/appweb514-svg/YoutubeDownloader/pull/1
 - 2026-10-24 | nouvelle demande | Mettre en place les 10 fonctionnalités proposées (plan : .project/PLAN-fonctionnalites-ecole.md)
 - 2026-10-24 | implémentation | 10 fonctionnalités livrées sur feature/interface-ecole ; bug corrigé : découpage FFmpeg en échec sur les MP4 avec sous-titres intégrés (-c:s copy)
+- 2026-10-24 | demande | Suppression de l'avertissement « build instable » au démarrage

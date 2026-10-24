@@ -49,15 +49,38 @@ public partial class DownloadMultipleSetupViewModel(
 
     public IReadOnlyList<VideoQualityPreference> AvailableVideoQualityPreferences { get; } =
         // Without .AsEnumerable(), the below line throws a compile-time error starting with .NET SDK v9.0.200
-        Enum.GetValues<VideoQualityPreference>().AsEnumerable().Reverse().ToArray();
+        Enum.GetValues<VideoQualityPreference>()
+            .AsEnumerable()
+            // Administrator-defined quality cap
+            .Where(p => p <= settingsService.MaxVideoQuality)
+            .Reverse()
+            .ToArray();
+
+    partial void OnSelectedVideoQualityPreferenceChanged(VideoQualityPreference value)
+    {
+        if (value > settingsService.MaxVideoQuality)
+            SelectedVideoQualityPreference = settingsService.MaxVideoQuality;
+    }
 
     public override Task InitializeAsync()
     {
         SelectedContainer = settingsService.LastContainer;
         SelectedVideoQualityPreference = settingsService.LastVideoQualityPreference;
+
+        if (settingsService.IsClassPresetDefault)
+            ApplyClassPreset();
+
         SelectedVideos.CollectionChanged += (_, _) => ConfirmCommand.NotifyCanExecuteChanged();
 
         return Task.CompletedTask;
+    }
+
+    // Class preset: MP4 plays everywhere, and 720p is a good trade-off for projectors and file size
+    [RelayCommand]
+    private void ApplyClassPreset()
+    {
+        SelectedContainer = Container.Mp4;
+        SelectedVideoQualityPreference = VideoQualityPreference.UpTo720p;
     }
 
     [RelayCommand]
@@ -72,7 +95,9 @@ public partial class DownloadMultipleSetupViewModel(
     [RelayCommand(CanExecute = nameof(CanConfirm))]
     private async Task ConfirmAsync()
     {
-        var dirPath = await dialogManager.PromptDirectoryPathAsync();
+        var dirPath =
+            settingsService.TryGetDownloadDirPath()
+            ?? await dialogManager.PromptDirectoryPathAsync();
         if (string.IsNullOrWhiteSpace(dirPath))
             return;
 
@@ -109,6 +134,7 @@ public partial class DownloadMultipleSetupViewModel(
 
         settingsService.LastContainer = SelectedContainer;
         settingsService.LastVideoQualityPreference = SelectedVideoQualityPreference;
+        settingsService.RememberCurrentCategory();
 
         Close(downloads);
     }

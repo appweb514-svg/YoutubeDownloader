@@ -109,12 +109,13 @@
         </Border>
 
         <!--  Preferences  -->
-        <UniformGrid
+        <Grid
             Grid.Row="2"
             Margin="8"
-            Columns="2">
+            ColumnDefinitions="*,*,Auto">
             <!--  Container preference  -->
             <ComboBox
+                Grid.Column="0"
                 Margin="8"
                 materialAssists:ComboBoxAssist.Label="{Binding LocalizationManager.ContainerLabel}"
                 ItemsSource="{Binding AvailableContainers}"
@@ -123,6 +124,7 @@
 
             <!--  Video quality preference  -->
             <ComboBox
+                Grid.Column="1"
                 Margin="8"
                 materialAssists:ComboBoxAssist.Label="{Binding LocalizationManager.VideoQualityLabel}"
                 IsEnabled="{Binding !SelectedContainer.IsAudioOnly}"
@@ -135,7 +137,21 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-        </UniformGrid>
+
+            <!--  Class preset  -->
+            <Button
+                Grid.Column="2"
+                Margin="8"
+                VerticalAlignment="Center"
+                Command="{Binding ApplyClassPresetCommand}"
+                Theme="{DynamicResource MaterialFlatButton}"
+                ToolTip.Tip="{Binding LocalizationManager.ClassPresetTooltip}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="SchoolOutline" />
+                    <TextBlock Text="{Binding LocalizationManager.ClassPresetButton}" />
+                </StackPanel>
+            </Button>
+        </Grid>
 
         <!--  Buttons  -->
         <UniformGrid

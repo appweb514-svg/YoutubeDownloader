@@ -91,7 +91,7 @@ jobs:
 
       - name: Rename macOS bundle
         if: ${{ startsWith(matrix.rid, 'osx-') }}
-        run: mv YoutubeDownloader/bin/publish/YTD.app YoutubeDownloader/bin/publish/YoutubeDownloader.app
+        run: mv YoutubeDownloader/bin/publish/YTD.app YoutubeDownloader/bin/publish/Youtube4School.app
 
       - name: Upload app binaries
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -157,24 +157,24 @@ jobs:
       - name: Set permissions
         if: ${{ !startsWith(matrix.rid, 'win-') }}
         run: |
-          [ -f YoutubeDownloader/YoutubeDownloader ] && chmod +x YoutubeDownloader/YoutubeDownloader || true
+          [ -f YoutubeDownloader/Youtube4School ] && chmod +x YoutubeDownloader/Youtube4School || true
           [ -f YoutubeDownloader/ffmpeg ] && chmod +x YoutubeDownloader/ffmpeg || true
 
           # macOS bundle
-          [ -f YoutubeDownloader/YoutubeDownloader.app/Contents/MacOS/YoutubeDownloader ] && chmod +x YoutubeDownloader/YoutubeDownloader.app/Contents/MacOS/YoutubeDownloader || true
+          [ -f YoutubeDownloader/Youtube4School.app/Contents/MacOS/Youtube4School ] && chmod +x YoutubeDownloader/Youtube4School.app/Contents/MacOS/Youtube4School || true
           [ -f YoutubeDownloader/YoutubeDownloader.app/Contents/MacOS/ffmpeg ] && chmod +x YoutubeDownloader/YoutubeDownloader.app/Contents/MacOS/ffmpeg || true
 
       - name: Create package
         # Change into the artifacts directory to avoid including the directory itself in the zip archive
         working-directory: YoutubeDownloader/
-        run: zip -r ../YoutubeDownloader.${{ matrix.rid }}.zip .
+        run: zip -r ../Youtube4School-portable.${{ matrix.rid }}.zip .
 
       - name: Upload release asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
           gh release upload ${{ github.ref_name }}
-          YoutubeDownloader.${{ matrix.rid }}.zip
+          Youtube4School-portable.${{ matrix.rid }}.zip
           --repo ${{ github.event.repository.full_name }}
 
   notify:

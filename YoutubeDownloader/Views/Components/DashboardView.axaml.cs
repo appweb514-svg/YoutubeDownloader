@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using PowerKit.Extensions;
@@ -29,6 +30,12 @@ public partial class DashboardView : UserControl<DashboardViewModel>
             ProcessQueryButton.Command?.ExecuteIfCan(ProcessQueryButton.CommandParameter);
         }
     }
+
+    // Below this width, the header buttons' labels push the title out of view
+    private const double CompactHeaderWidth = 760;
+
+    private void HeaderGrid_OnSizeChanged(object? sender, SizeChangedEventArgs args) =>
+        HeaderGrid.Classes.Set("compact", args.NewSize.Width < CompactHeaderWidth);
 
     private void StatusTextBlock_OnPointerReleased(object sender, PointerReleasedEventArgs args)
     {

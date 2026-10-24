@@ -1,9 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Gress;
@@ -13,9 +19,11 @@ using PowerKit.Extensions;
 using YoutubeDownloader.Core.Downloading;
 using YoutubeDownloader.Core.Resolving;
 using YoutubeDownloader.Core.Tagging;
+using YoutubeDownloader.Core.Utils;
 using YoutubeDownloader.Framework;
 using YoutubeDownloader.Localization;
 using YoutubeDownloader.Services;
+using YoutubeDownloader.Utils;
 using YoutubeExplode.Exceptions;
 
 namespace YoutubeDownloader.ViewModels.Components;
@@ -27,6 +35,7 @@ public partial class DashboardViewModel : ViewModelBase
     private readonly DialogManager _dialogManager;
     private readonly LocalizationManager _localizationManager;
     private readonly SettingsService _settingsService;
+    private readonly HistoryService _historyService;
 
     private readonly IDisposable _eventSubscription;
     private readonly ResizableSemaphore _downloadSemaphore = new();
@@ -37,7 +46,8 @@ public partial class DashboardViewModel : ViewModelBase
         SnackbarManager snackbarManager,
         DialogManager dialogManager,
         LocalizationManager localizationManager,
-        SettingsService settingsService
+        SettingsService settingsService,
+        HistoryService historyService
     )
     {
         _viewModelManager = viewModelManager;
@@ -46,6 +56,7 @@ public partial class DashboardViewModel : ViewModelBase
         _localizationManager = localizationManager;
         LocalizationManager = localizationManager;
         _settingsService = settingsService;
+        _historyService = historyService;
 
         _progressMuxer = Progress.CreateMuxer().WithAutoReset();
 
@@ -55,11 +66,46 @@ public partial class DashboardViewModel : ViewModelBase
                 v => _downloadSemaphore.MaxCount = v,
                 true
             ),
+            _settingsService.WatchProperty(
+                o => o.MaxDownloadRateKBps,
+                v => Http.MaxBytesPerSecond = Math.Max(0, v) * 1024L,
+                true
+            ),
+            _settingsService.WatchProperty(
+                o => o.ScheduledStartTime,
+                _ => OnPropertyChanged(nameof(DeferredModeText))
+            ),
+            LocalizationManager.WatchProperty(
+                o => o.Language,
+                _ => OnPropertyChanged(nameof(DeferredModeText))
+            ),
+            _settingsService.WatchProperty(
+                o => o.SchoolName,
+                _ => OnPropertyChanged(nameof(HeaderSubtitle))
+            ),
+            LocalizationManager.WatchProperty(
+                o => o.Language,
+                _ => OnPropertyChanged(nameof(HeaderSubtitle))
+            ),
+            _settingsService.WatchProperty(
+                o => o.DefaultDownloadDirPath,
+                _ => OnPropertyChanged(nameof(HasDefaultDownloadDir))
+            ),
+            _settingsService.WatchProperty(
+                o => o.CurrentCategory,
+                _ => OnPropertyChanged(nameof(CurrentCategory))
+            ),
+            _settingsService.WatchProperty(
+                o => o.RecentCategories,
+                _ => OnPropertyChanged(nameof(RecentCategories))
+            ),
             Progress.WatchProperty(
                 o => o.Current,
                 _ => OnPropertyChanged(nameof(IsProgressIndeterminate))
             )
         );
+
+        Downloads.CollectionChanged += (_, _) => RefreshSummary();
     }
 
     public LocalizationManager LocalizationManager { get; }
@@ -69,6 +115,7 @@ public partial class DashboardViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(ProcessQueryCommand))]
     [NotifyCanExecuteChangedFor(nameof(ShowAuthSetupCommand))]
     [NotifyCanExecuteChangedFor(nameof(ShowSettingsCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ImportLinkListCommand))]
     public partial bool IsBusy { get; set; }
 
     public ProgressContainer<Percentage> Progress { get; } = new();
@@ -80,6 +127,57 @@ public partial class DashboardViewModel : ViewModelBase
     public partial string? Query { get; set; }
 
     public ObservableCollection<DownloadViewModel> Downloads { get; } = [];
+
+    public string HeaderSubtitle =>
+        !string.IsNullOrWhiteSpace(_settingsService.SchoolName)
+            ? _settingsService.SchoolName
+            : LocalizationManager.AppHeaderSubtitle;
+
+    public bool HasDefaultDownloadDir =>
+        !string.IsNullOrWhiteSpace(_settingsService.DefaultDownloadDirPath);
+
+    public string? CurrentCategory
+    {
+        get => _settingsService.CurrentCategory;
+        set => _settingsService.CurrentCategory = !string.IsNullOrWhiteSpace(value) ? value : null;
+    }
+
+    public IReadOnlyList<string> RecentCategories => _settingsService.RecentCategories;
+
+    [ObservableProperty]
+    public partial bool IsDeferredMode { get; set; }
+
+    public string DeferredModeText =>
+        string.Format(
+            LocalizationManager.DeferredModeLabel,
+            ScheduleTime.Format(ScheduleTime.ParseOrDefault(_settingsService.ScheduledStartTime))
+        );
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCancelableDownloads))]
+    public partial int ActiveDownloadsCount { get; private set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCancelableDownloads))]
+    public partial int ScheduledDownloadsCount { get; private set; }
+
+    public bool HasCancelableDownloads => ActiveDownloadsCount + ScheduledDownloadsCount > 0;
+
+    [ObservableProperty]
+    public partial int CompletedDownloadsCount { get; private set; }
+
+    [ObservableProperty]
+    public partial int FailedDownloadsCount { get; private set; }
+
+    private void RefreshSummary()
+    {
+        ActiveDownloadsCount = Downloads.Count(d =>
+            d.Status is DownloadStatus.Enqueued or DownloadStatus.Started
+        );
+        CompletedDownloadsCount = Downloads.Count(d => d.Status == DownloadStatus.Completed);
+        FailedDownloadsCount = Downloads.Count(d => d.Status == DownloadStatus.Failed);
+        ScheduledDownloadsCount = Downloads.Count(d => d.Status == DownloadStatus.Scheduled);
+    }
 
     private async Task EnsureFFmpegAsync()
     {
@@ -102,7 +200,7 @@ public partial class DashboardViewModel : ViewModelBase
         // If the user declined, open settings to nudge them to set a custom FFmpeg path
         if (await _dialogManager.ShowDialogAsync(dialog) != true)
         {
-            await _dialogManager.ShowDialogAsync(_viewModelManager.GetSettingsViewModel());
+            await ShowSettingsAsync();
             return;
         }
 
@@ -112,10 +210,16 @@ public partial class DashboardViewModel : ViewModelBase
 
         try
         {
-            await FFmpeg.DownloadAsync(
-                Path.Combine(AppContext.BaseDirectory, FFmpeg.CliFileName),
-                progress
-            );
+            // Stored with the app data, so it works without administrator rights
+            var ffmpegFilePath = Path.Combine(StartOptions.Current.DataDirPath, FFmpeg.CliFileName);
+            await FFmpeg.DownloadAsync(ffmpegFilePath, progress);
+
+            // Outside the app folder, FFmpeg is not found by probing, so point to it explicitly
+            if (FFmpeg.TryGetCliFilePath() is null)
+            {
+                _settingsService.FFmpegFilePath = ffmpegFilePath;
+                _settingsService.Save();
+            }
 
             _snackbarManager.Notify(_localizationManager.FFmpegDownloadCompletedTitle);
         }
@@ -141,29 +245,243 @@ public partial class DashboardViewModel : ViewModelBase
 
     private bool CanShowAuthSetup() => !IsBusy;
 
+    // In locked mode, settings and the YouTube account are reserved to whoever knows the PIN
+    private async Task<bool> EnsureAdminAccessAsync() =>
+        !_settingsService.IsAdminPinSet
+        || await _dialogManager.ShowDialogAsync(_viewModelManager.GetPinPromptViewModel()) == true;
+
     [RelayCommand(CanExecute = nameof(CanShowAuthSetup))]
-    private async Task ShowAuthSetupAsync() =>
+    private async Task ShowAuthSetupAsync()
+    {
+        if (!await EnsureAdminAccessAsync())
+            return;
+
         await _dialogManager.ShowDialogAsync(_viewModelManager.GetAuthSetupViewModel());
+    }
+
+    [RelayCommand]
+    private async Task OpenDefaultDownloadDirAsync()
+    {
+        var dirPath = _settingsService.DefaultDownloadDirPath;
+        if (string.IsNullOrWhiteSpace(dirPath))
+            return;
+
+        try
+        {
+            Directory.CreateDirectory(dirPath);
+            Process.StartShellExecute(dirPath);
+        }
+        catch (Exception ex)
+        {
+            await _dialogManager.ShowDialogAsync(
+                _viewModelManager.GetMessageBoxViewModel(LocalizationManager.ErrorTitle, ex.Message)
+            );
+        }
+    }
+
+    [RelayCommand]
+    private async Task ShowHistoryAsync() =>
+        await _dialogManager.ShowDialogAsync(_viewModelManager.GetHistoryViewModel());
 
     private bool CanShowSettings() => !IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanShowSettings))]
-    private async Task ShowSettingsAsync() =>
-        await _dialogManager.ShowDialogAsync(_viewModelManager.GetSettingsViewModel());
-
-    private async void EnqueueDownload(DownloadViewModel download, int position = 0)
+    private async Task ShowSettingsAsync()
     {
-        Downloads.Insert(position, download);
-        var progress = _progressMuxer.CreateInput();
+        if (!await EnsureAdminAccessAsync())
+            return;
+
+        await _dialogManager.ShowDialogAsync(_viewModelManager.GetSettingsViewModel());
+    }
+
+    private async Task TrimDownloadAsync(DownloadViewModel download)
+    {
+        var filePath = download.FilePath!;
+        var trimmedFilePath = Path.Combine(
+            Path.GetDirectoryName(filePath) ?? "",
+            Path.GetFileNameWithoutExtension(filePath) + ".clip" + Path.GetExtension(filePath)
+        );
+
+        download.IsTrimming = true;
+        download.Progress.Report(Percentage.FromFraction(0));
 
         try
         {
+            await FFmpeg.TrimAsync(
+                _settingsService.FFmpegFilePath ?? FFmpeg.TryGetCliFilePath() ?? "ffmpeg",
+                filePath,
+                trimmedFilePath,
+                download.ClipStart,
+                download.ClipEnd,
+                (download.ClipEnd ?? download.Video?.Duration)
+                    - (download.ClipStart ?? TimeSpan.Zero),
+                download.Progress,
+                download.CancellationToken
+            );
+
+            File.Move(trimmedFilePath, filePath, true);
+        }
+        finally
+        {
+            download.IsTrimming = false;
+
+            if (File.Exists(trimmedFilePath))
+                File.Delete(trimmedFilePath);
+        }
+    }
+
+    // Plain-text record of where the video comes from, to cite it and check its licence later
+    private async Task WriteSourceFileAsync(DownloadViewModel download)
+    {
+        var video = download.Video!;
+        var filePath = download.FilePath!;
+
+        var lines = new List<string>
+        {
+            string.Format(LocalizationManager.SourceFileTitleLine, video.Title),
+            string.Format(LocalizationManager.SourceFileChannelLine, video.Author.ChannelTitle),
+            string.Format(
+                LocalizationManager.SourceFileVideoUrlLine,
+                $"https://www.youtube.com/watch?v={video.Id}"
+            ),
+            string.Format(
+                LocalizationManager.SourceFileChannelUrlLine,
+                $"https://www.youtube.com/channel/{video.Author.ChannelId}"
+            ),
+        };
+
+        if (video.Duration is { } duration)
+        {
+            lines.Add(
+                string.Format(LocalizationManager.SourceFileDurationLine, ClipTime.Format(duration))
+            );
+        }
+
+        if (download.ClipText is { } clipText)
+            lines.Add(string.Format(LocalizationManager.SourceFileClipLine, clipText));
+
+        lines.Add(
+            string.Format(
+                LocalizationManager.SourceFileDownloadedAtLine,
+                DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)
+            )
+        );
+
+        if (!string.IsNullOrWhiteSpace(_settingsService.SchoolName))
+        {
+            lines.Add(
+                string.Format(LocalizationManager.SourceFileSchoolLine, _settingsService.SchoolName)
+            );
+        }
+
+        lines.Add("");
+        lines.Add(LocalizationManager.SourceFileLicenseLine);
+
+        var sourceFilePath = Path.Combine(
+            Path.GetDirectoryName(filePath) ?? "",
+            Path.GetFileNameWithoutExtension(filePath) + ".source.txt"
+        );
+
+        await File.WriteAllLinesAsync(
+            sourceFilePath,
+            lines,
+            new UTF8Encoding(true),
+            download.CancellationToken
+        );
+    }
+
+    private void AppendToHistory(DownloadViewModel download)
+    {
+        var status = download.Status switch
+        {
+            DownloadStatus.Completed => LocalizationManager.DownloadStatusCompleted,
+            DownloadStatus.Failed => LocalizationManager.DownloadStatusFailed,
+            DownloadStatus.Canceled => LocalizationManager.DownloadStatusCanceled,
+            _ => null,
+        };
+
+        if (status is null || download.Video is null)
+            return;
+
+        try
+        {
+            _historyService.Append(
+                new HistoryEntry(
+                    DateTimeOffset.Now.ToString(
+                        "yyyy-MM-dd HH:mm:ss",
+                        CultureInfo.InvariantCulture
+                    ),
+                    Environment.UserName,
+                    download.Video.Title,
+                    $"https://www.youtube.com/watch?v={download.Video.Id}",
+                    download.FilePath ?? "",
+                    status,
+                    download.ClipText ?? ""
+                )
+            );
+        }
+        catch
+        {
+            // The history is not critical
+        }
+    }
+
+    private void ScheduleIfDeferred(DownloadViewModel download)
+    {
+        if (!IsDeferredMode)
+            return;
+
+        download.ScheduledAt = ScheduleTime.GetNextOccurrence(
+            ScheduleTime.ParseOrDefault(_settingsService.ScheduledStartTime),
+            DateTimeOffset.Now
+        );
+    }
+
+    private static async Task WaitUntilScheduledTimeAsync(DownloadViewModel download)
+    {
+        if (download.ScheduledAt is not { } scheduledAt)
+            return;
+
+        // Short steps so that sleep/wake cycles of the computer don't delay the start
+        while (DateTimeOffset.Now < scheduledAt)
+        {
+            var remaining = scheduledAt - DateTimeOffset.Now;
+            await Task.Delay(
+                remaining < TimeSpan.FromSeconds(30) ? remaining : TimeSpan.FromSeconds(30),
+                download.CancellationToken
+            );
+        }
+    }
+
+    private async void EnqueueDownload(DownloadViewModel download, int position = 0)
+    {
+        if (download.ScheduledAt is not null)
+            download.Status = DownloadStatus.Scheduled;
+
+        Downloads.Insert(position, download);
+
+        // Scheduled downloads join the global progress only once their time has come
+        ICompletableProgress<Percentage>? progress = null;
+
+        try
+        {
+            if (download.Status == DownloadStatus.Scheduled)
+            {
+                await WaitUntilScheduledTimeAsync(download);
+
+                download.Status = DownloadStatus.Enqueued;
+                RefreshSummary();
+            }
+
+            progress = _progressMuxer.CreateInput();
+
             using var downloader = new VideoDownloader(_settingsService.LastAuthCookies);
             var tagInjector = new MediaTagInjector();
 
             using var access = await _downloadSemaphore.AcquireAsync(download.CancellationToken);
 
             download.Status = DownloadStatus.Started;
+            RefreshSummary();
 
             var downloadOption =
                 download.DownloadOption
@@ -179,10 +497,34 @@ public partial class DashboardViewModel : ViewModelBase
                 download.Video!,
                 downloadOption,
                 _settingsService.ShouldInjectSubtitles,
+                _settingsService.PreferredSubtitleLanguage,
                 _settingsService.FFmpegFilePath,
                 download.Progress.Merge(progress),
                 download.CancellationToken
             );
+
+            if (download.HasClip)
+                await TrimDownloadAsync(download);
+
+            // Separate .srt files follow the clip, if any
+            if (_settingsService.ShouldSaveSubtitleFiles)
+            {
+                try
+                {
+                    await downloader.DownloadSubtitleFilesAsync(
+                        download.FilePath!,
+                        download.Video!,
+                        _settingsService.PreferredSubtitleLanguage,
+                        download.ClipStart,
+                        download.ClipEnd,
+                        download.CancellationToken
+                    );
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // Subtitle files are not critical
+                }
+            }
 
             if (_settingsService.ShouldInjectTags)
             {
@@ -200,7 +542,20 @@ public partial class DashboardViewModel : ViewModelBase
                 }
             }
 
+            if (_settingsService.ShouldWriteSourceFile)
+            {
+                try
+                {
+                    await WriteSourceFileAsync(download);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // The source file is not critical
+                }
+            }
+
             download.Status = DownloadStatus.Completed;
+            RefreshSummary();
         }
         catch (Exception ex)
         {
@@ -220,10 +575,12 @@ public partial class DashboardViewModel : ViewModelBase
 
             // Short error message for YouTube-related errors, full for others
             download.ErrorMessage = ex is YoutubeExplodeException ? ex.Message : ex.ToString();
+            RefreshSummary();
         }
         finally
         {
-            progress.ReportCompletion();
+            progress?.ReportCompletion();
+            AppendToHistory(download);
             download.Dispose();
         }
     }
@@ -295,6 +652,7 @@ public partial class DashboardViewModel : ViewModelBase
                 if (download is null)
                     return;
 
+                ScheduleIfDeferred(download);
                 EnqueueDownload(download);
 
                 Query = "";
@@ -317,7 +675,10 @@ public partial class DashboardViewModel : ViewModelBase
                     return;
 
                 foreach (var download in downloads)
+                {
+                    ScheduleIfDeferred(download);
                     EnqueueDownload(download);
+                }
 
                 Query = "";
             }
@@ -338,9 +699,13 @@ public partial class DashboardViewModel : ViewModelBase
                 _viewModelManager.GetMessageBoxViewModel(
                     LocalizationManager.ErrorTitle,
                     // Short error message for YouTube-related errors, full for others
-                    ex is YoutubeExplodeException
-                        ? ex.Message
-                        : ex.ToString()
+                    ex switch
+                    {
+                        HttpRequestException { StatusCode: HttpStatusCode.Forbidden } =>
+                            LocalizationManager.YoutubeForbiddenMessage,
+                        YoutubeExplodeException => ex.Message,
+                        _ => ex.ToString(),
+                    }
                 )
             );
         }
@@ -349,6 +714,46 @@ public partial class DashboardViewModel : ViewModelBase
             progress.ReportCompletion();
             IsBusy = false;
         }
+    }
+
+    private bool CanImportLinkList() => !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanImportLinkList))]
+    private async Task ImportLinkListAsync()
+    {
+        try
+        {
+            var filePath = await _dialogManager.PromptOpenFilePathAsync([
+                new FilePickerFileType(LocalizationManager.LinkListFileType)
+                {
+                    Patterns = ["*.txt", "*.csv"],
+                },
+                FilePickerFileTypes.All,
+            ]);
+
+            if (string.IsNullOrWhiteSpace(filePath))
+                return;
+
+            var links = LinkListParser.Parse(await File.ReadAllTextAsync(filePath));
+            if (!links.Any())
+            {
+                _snackbarManager.Notify(LocalizationManager.LinkListEmptyMessage);
+                return;
+            }
+
+            Query = string.Join('\n', links);
+        }
+        catch (Exception ex)
+        {
+            await _dialogManager.ShowDialogAsync(
+                _viewModelManager.GetMessageBoxViewModel(LocalizationManager.ErrorTitle, ex.Message)
+            );
+
+            return;
+        }
+
+        if (ProcessQueryCommand.CanExecute(null))
+            await ProcessQueryCommand.ExecuteAsync(null);
     }
 
     private void RemoveDownload(DownloadViewModel download)
@@ -393,12 +798,16 @@ public partial class DashboardViewModel : ViewModelBase
             ? _viewModelManager.GetDownloadViewModel(
                 download.Video!,
                 download.DownloadOption,
-                download.FilePath!
+                download.FilePath!,
+                download.ClipStart,
+                download.ClipEnd
             )
             : _viewModelManager.GetDownloadViewModel(
                 download.Video!,
                 download.DownloadPreference!,
-                download.FilePath!
+                download.FilePath!,
+                download.ClipStart,
+                download.ClipEnd
             );
 
         EnqueueDownload(newDownload, position);

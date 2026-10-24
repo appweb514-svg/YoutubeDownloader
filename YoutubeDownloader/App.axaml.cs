@@ -23,6 +23,7 @@ public partial class App : Application, IDisposable
     private readonly SettingsService _settingsService;
 
     private readonly IDisposable _eventSubscription;
+    private readonly IDisposable _colorThemeSubscription;
 
     private bool _isDisposed;
 
@@ -42,15 +43,19 @@ public partial class App : Application, IDisposable
         // Services
         services.AddSingleton<SettingsService>();
         services.AddSingleton<UpdateService>();
+        services.AddSingleton<HistoryService>();
 
         // View models
         services.AddTransient<MainViewModel>();
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<DownloadViewModel>();
+        services.AddTransient<VideoPreviewViewModel>();
         services.AddTransient<AuthSetupViewModel>();
         services.AddTransient<DownloadMultipleSetupViewModel>();
         services.AddTransient<DownloadSingleSetupViewModel>();
+        services.AddTransient<HistoryViewModel>();
         services.AddTransient<MessageBoxViewModel>();
+        services.AddTransient<PinPromptViewModel>();
         services.AddTransient<SettingsViewModel>();
 
         _services = services.BuildServiceProvider(true);
@@ -71,6 +76,11 @@ public partial class App : Application, IDisposable
                 InitializeTheme();
             }
         );
+
+        _colorThemeSubscription = _settingsService.WatchProperty(
+            o => o.ColorTheme,
+            _ => InitializeTheme()
+        );
     }
 
     private void InitializeTheme()
@@ -82,10 +92,14 @@ public partial class App : Application, IDisposable
             _ => PlatformSettings?.GetColorValues().ThemeVariant ?? PlatformThemeVariant.Light,
         };
 
-        this.LocateMaterialTheme<MaterialThemeBase>().CurrentTheme =
-            actualTheme == PlatformThemeVariant.Light
-                ? Theme.Create(Theme.Light, Color.Parse("#343838"), Color.Parse("#F9A825"))
-                : Theme.Create(Theme.Dark, Color.Parse("#E8E8E8"), Color.Parse("#F9A825"));
+        var isDark = actualTheme != PlatformThemeVariant.Light;
+        var (primary, secondary) = _settingsService.ColorTheme.GetColors(isDark);
+
+        this.LocateMaterialTheme<MaterialThemeBase>().CurrentTheme = Theme.Create(
+            isDark ? Theme.Dark : Theme.Light,
+            primary,
+            secondary
+        );
     }
 
     public override void Initialize()
@@ -133,6 +147,7 @@ public partial class App : Application, IDisposable
         _isDisposed = true;
 
         _eventSubscription.Dispose();
+        _colorThemeSubscription.Dispose();
         _services.Dispose();
     }
 }

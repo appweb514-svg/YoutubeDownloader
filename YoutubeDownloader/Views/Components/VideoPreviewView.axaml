@@ -1,0 +1,36 @@
+<UserControl
+    x:Class="YoutubeDownloader.Views.Components.VideoPreviewView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:components="clr-namespace:YoutubeDownloader.ViewModels.Components"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    x:DataType="components:VideoPreviewViewModel">
+    <DockPanel>
+        <!--  Actions  -->
+        <StackPanel
+            Margin="8,4"
+            HorizontalAlignment="Right"
+            DockPanel.Dock="Bottom"
+            Orientation="Horizontal"
+            Spacing="4">
+            <Button Command="{Binding OpenInBrowserCommand}" Theme="{DynamicResource MaterialFlatButton}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="OpenInNew" />
+                    <TextBlock Text="{Binding LocalizationManager.PreviewOpenInBrowserButton}" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding CloseCommand}" Theme="{DynamicResource MaterialFlatButton}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="Close" />
+                    <TextBlock Text="{Binding LocalizationManager.PreviewCloseButton}" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <!--  Player  -->
+        <NativeWebView
+            x:Name="WebBrowser"
+            EnvironmentRequested="WebBrowser_OnEnvironmentRequested"
+            Loaded="WebBrowser_OnLoaded" />
+    </DockPanel>
+</UserControl>

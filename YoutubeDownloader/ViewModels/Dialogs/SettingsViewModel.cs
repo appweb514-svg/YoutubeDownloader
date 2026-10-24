@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PowerKit.Extensions;
+using YoutubeDownloader.Core.Downloading;
 using YoutubeDownloader.Framework;
 using YoutubeDownloader.Localization;
 using YoutubeDownloader.Services;
+using YoutubeDownloader.Utils;
 
 namespace YoutubeDownloader.ViewModels.Dialogs;
 
@@ -34,10 +38,76 @@ public partial class SettingsViewModel : DialogViewModelBase
 
     public IReadOnlyList<ThemeVariant> AvailableThemes { get; } = Enum.GetValues<ThemeVariant>();
 
+    // Built once: a new list on every settings change would make the combo box push back a stale selection
+    public IReadOnlyList<ColorThemeOption> AvailableColorThemes =>
+        field ??= [
+            new(ColorTheme.School, LocalizationManager.ColorThemeSchool),
+            new(ColorTheme.Nature, LocalizationManager.ColorThemeNature),
+            new(ColorTheme.Ocean, LocalizationManager.ColorThemeOcean),
+            new(ColorTheme.Lavender, LocalizationManager.ColorThemeLavender),
+            new(ColorTheme.Sunset, LocalizationManager.ColorThemeSunset),
+            new(ColorTheme.Classic, LocalizationManager.ColorThemeClassic),
+        ];
+
+    public ColorThemeOption? SelectedColorTheme
+    {
+        get => AvailableColorThemes.FirstOrDefault(o => o.Value == _settingsService.ColorTheme);
+        set
+        {
+            if (value is not null)
+                _settingsService.ColorTheme = value.Value;
+        }
+    }
+
     public ThemeVariant Theme
     {
         get => _settingsService.Theme;
         set => _settingsService.Theme = value;
+    }
+
+    public string? SchoolName
+    {
+        get => _settingsService.SchoolName;
+        set => _settingsService.SchoolName = !string.IsNullOrWhiteSpace(value) ? value : null;
+    }
+
+    public string? DefaultDownloadDirPath
+    {
+        get => _settingsService.DefaultDownloadDirPath;
+        set =>
+            _settingsService.DefaultDownloadDirPath = !string.IsNullOrWhiteSpace(value)
+                ? value
+                : null;
+    }
+
+    public bool IsClassPresetDefault
+    {
+        get => _settingsService.IsClassPresetDefault;
+        set => _settingsService.IsClassPresetDefault = value;
+    }
+
+    public bool ShouldWriteSourceFile
+    {
+        get => _settingsService.ShouldWriteSourceFile;
+        set => _settingsService.ShouldWriteSourceFile = value;
+    }
+
+    public bool IsAdminPinSet => _settingsService.IsAdminPinSet;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetAdminPinCommand))]
+    public partial string? NewAdminPin { get; set; }
+
+    public IReadOnlyList<VideoQualityPreference> AvailableMaxVideoQualities { get; } =
+        Enum.GetValues<VideoQualityPreference>()
+            .Where(p => p != VideoQualityPreference.Lowest)
+            .Reverse()
+            .ToArray();
+
+    public VideoQualityPreference MaxVideoQuality
+    {
+        get => _settingsService.MaxVideoQuality;
+        set => _settingsService.MaxVideoQuality = value;
     }
 
     public IReadOnlyList<Language> AvailableLanguages { get; } = Enum.GetValues<Language>();
@@ -49,7 +119,9 @@ public partial class SettingsViewModel : DialogViewModelBase
     }
 
     public bool IsAutoUpdateAvailable { get; } =
-        OperatingSystem.IsWindows() && StartOptions.Current.IsAutoUpdateAllowed;
+        UpdateService.IsAvailable
+        && OperatingSystem.IsWindows()
+        && StartOptions.Current.IsAutoUpdateAllowed;
 
     public bool IsAutoUpdateEnabled
     {
@@ -81,6 +153,18 @@ public partial class SettingsViewModel : DialogViewModelBase
         set => _settingsService.ShouldInjectSubtitles = value;
     }
 
+    public bool ShouldSaveSubtitleFiles
+    {
+        get => _settingsService.ShouldSaveSubtitleFiles;
+        set => _settingsService.ShouldSaveSubtitleFiles = value;
+    }
+
+    public string PreferredSubtitleLanguage
+    {
+        get => _settingsService.PreferredSubtitleLanguage;
+        set => _settingsService.PreferredSubtitleLanguage = value?.Trim() ?? "";
+    }
+
     public bool ShouldInjectTags
     {
         get => _settingsService.ShouldInjectTags;
@@ -105,6 +189,33 @@ public partial class SettingsViewModel : DialogViewModelBase
         set => _settingsService.ParallelLimit = Math.Clamp(value, 1, 10);
     }
 
+    public int MaxDownloadRateKBps
+    {
+        get => _settingsService.MaxDownloadRateKBps;
+        set => _settingsService.MaxDownloadRateKBps = Math.Max(0, value);
+    }
+
+    public string ScheduledStartTime
+    {
+        get => _settingsService.ScheduledStartTime;
+        set =>
+            _settingsService.ScheduledStartTime = ScheduleTime.TryParse(value) is { } time
+                ? ScheduleTime.Format(time)
+                : value;
+    }
+
+    private bool CanSetAdminPin() => NewAdminPin?.Trim().Length >= 4;
+
+    [RelayCommand(CanExecute = nameof(CanSetAdminPin))]
+    private void SetAdminPin()
+    {
+        _settingsService.SetAdminPin(NewAdminPin?.Trim());
+        NewAdminPin = null;
+    }
+
+    [RelayCommand]
+    private void RemoveAdminPin() => _settingsService.SetAdminPin(null);
+
     [RelayCommand]
     private async Task BrowseFFmpegFilePathAsync()
     {
@@ -127,6 +238,20 @@ public partial class SettingsViewModel : DialogViewModelBase
     [RelayCommand]
     private void ResetFFmpegFilePath() => FFmpegFilePath = null;
 
+    [RelayCommand]
+    private async Task BrowseDefaultDownloadDirPathAsync()
+    {
+        var dirPath = await _dialogManager.PromptDirectoryPathAsync(DefaultDownloadDirPath ?? "");
+
+        if (string.IsNullOrWhiteSpace(dirPath))
+            return;
+
+        DefaultDownloadDirPath = dirPath;
+    }
+
+    [RelayCommand]
+    private void ResetDefaultDownloadDirPath() => DefaultDownloadDirPath = null;
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
@@ -137,3 +262,5 @@ public partial class SettingsViewModel : DialogViewModelBase
         base.Dispose(disposing);
     }
 }
+
+public record ColorThemeOption(ColorTheme Value, string Name);

@@ -5,7 +5,7 @@
     xmlns:converters="clr-namespace:YoutubeDownloader.Converters"
     xmlns:dialogs="clr-namespace:YoutubeDownloader.ViewModels.Dialogs"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    Width="380"
+    Width="440"
     x:DataType="dialogs:SettingsViewModel">
     <Grid RowDefinitions="Auto,*,Auto">
         <TextBlock
@@ -22,6 +22,96 @@
             BorderThickness="0,1">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                 <StackPanel Orientation="Vertical">
+                    <!--  School  -->
+                    <TextBlock
+                        Margin="16,8,16,4"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryHueMidBrush}"
+                        Text="{Binding LocalizationManager.SchoolSectionLabel}" />
+
+                    <!--  School name  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.SchoolNameTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.SchoolNameLabel}" />
+                        <TextBox
+                            Width="190"
+                            Height="20"
+                            DockPanel.Dock="Right"
+                            FontSize="13"
+                            PlaceholderText="{Binding LocalizationManager.SchoolNamePlaceholderText}"
+                            Text="{Binding SchoolName}"
+                            Theme="{DynamicResource CompactTextBox}" />
+                    </DockPanel>
+
+                    <!--  Default download folder  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.DefaultDownloadDirTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.DefaultDownloadDirLabel}" />
+                        <TextBox
+                            Width="190"
+                            Height="20"
+                            DockPanel.Dock="Right"
+                            FontSize="13"
+                            PlaceholderText="{Binding LocalizationManager.DefaultDownloadDirPlaceholderText}"
+                            Text="{Binding DefaultDownloadDirPath}"
+                            Theme="{DynamicResource CompactTextBox}">
+                            <TextBox.InnerRightContent>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button
+                                        Padding="4"
+                                        Command="{Binding ResetDefaultDownloadDirPathCommand}"
+                                        IsEnabled="{Binding DefaultDownloadDirPath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                        Theme="{DynamicResource MaterialFlatButton}">
+                                        <materialIcons:MaterialIcon
+                                            Width="14"
+                                            Height="14"
+                                            Kind="Close" />
+                                    </Button>
+                                    <Button
+                                        Padding="4"
+                                        Command="{Binding BrowseDefaultDownloadDirPathCommand}"
+                                        Theme="{DynamicResource MaterialFlatButton}">
+                                        <materialIcons:MaterialIcon
+                                            Width="14"
+                                            Height="14"
+                                            Kind="FolderOpen" />
+                                    </Button>
+                                </StackPanel>
+                            </TextBox.InnerRightContent>
+                        </TextBox>
+                    </DockPanel>
+
+                    <!--  Class preset by default  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.ClassPresetDefaultTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.ClassPresetDefaultLabel}" />
+                        <ToggleSwitch DockPanel.Dock="Right" IsChecked="{Binding IsClassPresetDefault}" />
+                    </DockPanel>
+
+                    <!--  Source file  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.WriteSourceFileTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.WriteSourceFileLabel}" />
+                        <ToggleSwitch DockPanel.Dock="Right" IsChecked="{Binding ShouldWriteSourceFile}" />
+                    </DockPanel>
+
+                    <!--  General  -->
+                    <TextBlock
+                        Margin="16,16,16,4"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryHueMidBrush}"
+                        Text="{Binding LocalizationManager.GeneralSectionLabel}" />
+
                     <!--  Theme  -->
                     <DockPanel
                         Margin="16,8"
@@ -33,6 +123,25 @@
                             DockPanel.Dock="Right"
                             ItemsSource="{Binding AvailableThemes}"
                             SelectedItem="{Binding Theme}" />
+                    </DockPanel>
+
+                    <!--  Color theme  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.ColorThemeTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.ColorThemeLabel}" />
+                        <ComboBox
+                            Width="160"
+                            DockPanel.Dock="Right"
+                            ItemsSource="{Binding AvailableColorThemes}"
+                            SelectedItem="{Binding SelectedColorTheme}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="dialogs:ColorThemeOption">
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </DockPanel>
 
                     <!--  Language  -->
@@ -141,6 +250,31 @@
                         <ToggleSwitch DockPanel.Dock="Right" IsChecked="{Binding ShouldInjectSubtitles}" />
                     </DockPanel>
 
+                    <!--  Save subtitle files  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.SaveSubtitleFilesTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.SaveSubtitleFilesLabel}" />
+                        <ToggleSwitch DockPanel.Dock="Right" IsChecked="{Binding ShouldSaveSubtitleFiles}" />
+                    </DockPanel>
+
+                    <!--  Preferred subtitle language  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.SubtitleLanguageTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.SubtitleLanguageLabel}" />
+                        <TextBox
+                            Width="150"
+                            Height="20"
+                            DockPanel.Dock="Right"
+                            FontSize="13"
+                            PlaceholderText="{Binding LocalizationManager.SubtitleLanguagePlaceholderText}"
+                            Text="{Binding PreferredSubtitleLanguage}"
+                            Theme="{DynamicResource CompactTextBox}" />
+                    </DockPanel>
+
                     <!--  Inject tags  -->
                     <DockPanel
                         Margin="16,8"
@@ -193,6 +327,115 @@
                                 TickFrequency="1"
                                 Value="{Binding ParallelLimit}" />
                         </StackPanel>
+                    </DockPanel>
+
+                    <!--  Maximum download rate  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.MaxDownloadRateTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.MaxDownloadRateLabel}" />
+                        <TextBox
+                            Width="150"
+                            Height="20"
+                            DockPanel.Dock="Right"
+                            FontSize="13"
+                            Text="{Binding MaxDownloadRateKBps}"
+                            Theme="{DynamicResource CompactTextBox}" />
+                    </DockPanel>
+
+                    <!--  Scheduled start time  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.ScheduledStartTimeTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.ScheduledStartTimeLabel}" />
+                        <TextBox
+                            Width="150"
+                            Height="20"
+                            DockPanel.Dock="Right"
+                            FontSize="13"
+                            PlaceholderText="18:00"
+                            Text="{Binding ScheduledStartTime}"
+                            Theme="{DynamicResource CompactTextBox}" />
+                    </DockPanel>
+
+                    <!--  Administration  -->
+                    <TextBlock
+                        Margin="16,16,16,4"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryHueMidBrush}"
+                        Text="{Binding LocalizationManager.AdminSectionLabel}" />
+
+                    <!--  Admin PIN (not set)  -->
+                    <DockPanel
+                        Margin="16,8"
+                        IsVisible="{Binding !IsAdminPinSet}"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.AdminPinTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.AdminPinLabel}" />
+                        <StackPanel
+                            DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            Spacing="4">
+                            <TextBox
+                                Width="110"
+                                Height="20"
+                                FontSize="13"
+                                PasswordChar="●"
+                                PlaceholderText="{Binding LocalizationManager.AdminPinPlaceholderText}"
+                                Text="{Binding NewAdminPin}"
+                                Theme="{DynamicResource CompactTextBox}" />
+                            <Button
+                                Padding="8,2"
+                                Command="{Binding SetAdminPinCommand}"
+                                Content="{Binding LocalizationManager.AdminPinSetButton}"
+                                Theme="{DynamicResource MaterialFlatButton}" />
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!--  Admin PIN (set)  -->
+                    <DockPanel
+                        Margin="16,8"
+                        IsVisible="{Binding IsAdminPinSet}"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.AdminPinTooltip}">
+                        <StackPanel
+                            DockPanel.Dock="Left"
+                            Orientation="Horizontal"
+                            Spacing="6">
+                            <materialIcons:MaterialIcon
+                                Width="16"
+                                Height="16"
+                                Kind="LockOutline" />
+                            <TextBlock Text="{Binding LocalizationManager.AdminPinActiveLabel}" />
+                        </StackPanel>
+                        <Button
+                            Padding="8,2"
+                            DockPanel.Dock="Right"
+                            Command="{Binding RemoveAdminPinCommand}"
+                            Content="{Binding LocalizationManager.AdminPinRemoveButton}"
+                            Theme="{DynamicResource MaterialFlatButton}" />
+                    </DockPanel>
+
+                    <!--  Maximum video quality  -->
+                    <DockPanel
+                        Margin="16,8"
+                        LastChildFill="False"
+                        ToolTip.Tip="{Binding LocalizationManager.MaxVideoQualityTooltip}">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizationManager.MaxVideoQualityLabel}" />
+                        <ComboBox
+                            Width="160"
+                            DockPanel.Dock="Right"
+                            ItemsSource="{Binding AvailableMaxVideoQualities}"
+                            SelectedItem="{Binding MaxVideoQuality}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={x:Static converters:VideoQualityPreferenceToStringConverter.Instance}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </DockPanel>
                 </StackPanel>
             </ScrollViewer>

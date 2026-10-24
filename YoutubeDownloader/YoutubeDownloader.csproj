@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <!-- School edition: the executable (taskbar, Dock, process name) is named after the app -->
+    <AssemblyName>Youtube4School</AssemblyName>
+    <RootNamespace>YoutubeDownloader</RootNamespace>
     <ApplicationIcon>../favicon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Trimmed builds break support for Windows 10 for some reason -->
@@ -12,8 +15,8 @@
 
   <PropertyGroup>
     <MacOSBundleIdentifier>me.tyrrrz.youtubedownloader</MacOSBundleIdentifier>
-    <MacOSBundleName>YTD</MacOSBundleName>
-    <MacOSBundleDisplayName>YoutubeDownloader</MacOSBundleDisplayName>
+    <MacOSBundleName>Youtube4School</MacOSBundleName>
+    <MacOSBundleDisplayName>Youtube4School</MacOSBundleDisplayName>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,6 +30,11 @@
 
   <ItemGroup>
     <AvaloniaResource Include="../favicon.ico" Link="favicon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Instructions for the portable (no installation) package -->
+    <None Include="LISEZMOI.txt" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

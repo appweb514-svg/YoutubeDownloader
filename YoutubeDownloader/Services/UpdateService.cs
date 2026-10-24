@@ -1,29 +1,18 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Onova;
 using Onova.Exceptions;
-using Onova.Services;
 
 namespace YoutubeDownloader.Services;
 
 public class UpdateService(SettingsService settingsService) : IDisposable
 {
-    private readonly IUpdateManager? _updateManager =
-        OperatingSystem.IsWindows() && StartOptions.Current.IsAutoUpdateAllowed
-            ? new UpdateManager(
-                new GithubPackageResolver(
-                    "Tyrrrz",
-                    "YoutubeDownloader",
-                    // Examples:
-                    // YoutubeDownloader.win-arm64.zip
-                    // YoutubeDownloader.win-x64.zip
-                    // YoutubeDownloader.linux-x64.zip
-                    $"YoutubeDownloader.{RuntimeInformation.RuntimeIdentifier}.zip"
-                ),
-                new ZipPackageExtractor()
-            )
-            : null;
+    // This school edition is a fork: the upstream releases (Tyrrrz/YoutubeDownloader) would
+    // replace it with the original app, so auto-updates are disabled until the fork publishes
+    // its own release packages.
+    public static bool IsAvailable => false;
+
+    private readonly IUpdateManager? _updateManager = null;
 
     private Version? _updateVersion;
     private bool _isUpdatePrepared;

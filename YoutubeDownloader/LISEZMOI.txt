@@ -1,0 +1,16 @@
+Youtube4School - version portable pour Windows
+
+Aucune installation ni droits administrateur nécessaires.
+
+1. Extraire ce dossier dans un emplacement personnel : Documents, Bureau ou clé USB
+   (éviter « C:\Program Files », qui demande des droits administrateur).
+2. Lancer Youtube4School.exe.
+3. Au premier lancement, l'app propose de télécharger FFmpeg : accepter.
+
+Les réglages (Settings.dat), l'historique et FFmpeg sont rangés à côté de l'application,
+qui reste donc transportable sur une clé USB. Si le dossier n'est pas modifiable,
+ils sont rangés dans %LOCALAPPDATA%\Youtube4School.
+
+Windows SmartScreen peut afficher « Windows a protégé votre ordinateur » car l'application
+n'est pas signée : cliquer sur « Informations complémentaires » puis « Exécuter quand même ».
+Cela ne demande pas de droits administrateur.

@@ -10,7 +10,7 @@
     x:Name="UserControl"
     Width="500"
     x:DataType="dialogs:DownloadSingleSetupViewModel">
-    <Grid RowDefinitions="Auto,*,Auto,Auto">
+    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto">
         <!--  Info  -->
         <StackPanel
             Grid.Row="0"
@@ -56,6 +56,19 @@
                         Text="{Binding Video.Duration, TargetNullValue=Live}"
                         TextTrimming="CharacterEllipsis" />
                 </StackPanel>
+
+                <!--  Preview  -->
+                <Button
+                    Padding="6,2"
+                    Command="{Binding ShowPreviewCommand}"
+                    IsVisible="{Binding !IsPreviewVisible}"
+                    Theme="{DynamicResource MaterialFlatButton}"
+                    ToolTip.Tip="{Binding LocalizationManager.PreviewTooltip}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <materialIcons:MaterialIcon Kind="PlayCircleOutline" />
+                        <TextBlock Text="{Binding LocalizationManager.PreviewButton}" />
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </StackPanel>
 
@@ -64,59 +77,124 @@
             Grid.Row="1"
             BorderBrush="{DynamicResource MaterialDividerBrush}"
             BorderThickness="0,1">
-            <Image asyncImageLoader:ImageLoader.Source="{Binding Video, Converter={x:Static converters:VideoToHighestQualityThumbnailUrlStringConverter.Instance}}" />
+            <Panel>
+                <Image asyncImageLoader:ImageLoader.Source="{Binding Video, Converter={x:Static converters:VideoToHighestQualityThumbnailUrlStringConverter.Instance}}" IsVisible="{Binding !IsPreviewVisible}" />
+
+                <!--  Preview  -->
+                <ContentControl
+                    Height="320"
+                    Content="{Binding Preview}"
+                    IsVisible="{Binding IsPreviewVisible}" />
+            </Panel>
         </Border>
 
         <!--  Download options  -->
-        <ComboBox
-            Grid.Row="2"
-            Margin="16"
-            materialAssists:ComboBoxAssist.Label="{Binding LocalizationManager.FormatLabel}"
-            DockPanel.Dock="Left"
-            ItemsSource="{Binding AvailableDownloadOptions}"
-            SelectedItem="{Binding SelectedDownloadOption}"
-            Theme="{DynamicResource MaterialFilledComboBox}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Spacing="2">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <!--  Video quality / audio-only label  -->
-                            <TextBlock Classes.audioOnly="{Binding IsAudioOnly}" FontWeight="SemiBold">
-                                <TextBlock.Styles>
-                                    <Style Selector="TextBlock">
-                                        <Setter Property="Text" Value="{Binding VideoQuality, Mode=OneWay}" />
+        <DockPanel Grid.Row="2" Margin="16">
+            <!--  Class preset  -->
+            <Button
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                DockPanel.Dock="Right"
+                Command="{Binding ApplyClassPresetCommand}"
+                Theme="{DynamicResource MaterialFlatButton}"
+                ToolTip.Tip="{Binding LocalizationManager.ClassPresetTooltip}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <materialIcons:MaterialIcon Kind="SchoolOutline" />
+                    <TextBlock Text="{Binding LocalizationManager.ClassPresetButton}" />
+                </StackPanel>
+            </Button>
 
-                                        <Style Selector="^.audioOnly">
-                                            <Setter Property="Text" Value="{Binding #UserControl.DataContext.LocalizationManager.AudioLabel}" />
+            <ComboBox
+                materialAssists:ComboBoxAssist.Label="{Binding LocalizationManager.FormatLabel}"
+                DockPanel.Dock="Left"
+                ItemsSource="{Binding AvailableDownloadOptions}"
+                SelectedItem="{Binding SelectedDownloadOption}"
+                Theme="{DynamicResource MaterialFilledComboBox}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <!--  Video quality / audio-only label  -->
+                                <TextBlock Classes.audioOnly="{Binding IsAudioOnly}" FontWeight="SemiBold">
+                                    <TextBlock.Styles>
+                                        <Style Selector="TextBlock">
+                                            <Setter Property="Text" Value="{Binding VideoQuality, Mode=OneWay}" />
+
+                                            <Style Selector="^.audioOnly">
+                                                <Setter Property="Text" Value="{Binding #UserControl.DataContext.LocalizationManager.AudioLabel}" />
+                                            </Style>
                                         </Style>
-                                    </Style>
-                                </TextBlock.Styles>
-                            </TextBlock>
+                                    </TextBlock.Styles>
+                                </TextBlock>
 
-                            <!--  Upscaled badge  -->
-                            <Border
-                                Padding="6,1"
-                                BorderBrush="{DynamicResource MaterialDividerBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                IsVisible="{Binding IsVideoUpscaled}">
-                                <TextBlock
-                                    FontSize="11"
-                                    FontWeight="Medium"
-                                    Text="{Binding #UserControl.DataContext.LocalizationManager.UpscaledLabel}" />
-                            </Border>
+                                <!--  Upscaled badge  -->
+                                <Border
+                                    Padding="6,1"
+                                    BorderBrush="{DynamicResource MaterialDividerBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    IsVisible="{Binding IsVideoUpscaled}">
+                                    <TextBlock
+                                        FontSize="11"
+                                        FontWeight="Medium"
+                                        Text="{Binding #UserControl.DataContext.LocalizationManager.UpscaledLabel}" />
+                                </Border>
+                            </StackPanel>
+
+                            <!--  Container  -->
+                            <TextBlock FontWeight="Light" Text="{Binding Container, Mode=OneWay}" />
                         </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </DockPanel>
 
-                        <!--  Container  -->
-                        <TextBlock FontWeight="Light" Text="{Binding Container, Mode=OneWay}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+        <!--  Clip  -->
+        <StackPanel
+            Grid.Row="3"
+            Margin="16,0,16,8"
+            Orientation="Vertical"
+            Spacing="6"
+            ToolTip.Tip="{Binding LocalizationManager.ClipTooltip}">
+            <TextBlock
+                FontSize="12"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource PrimaryHueMidBrush}"
+                Text="{Binding LocalizationManager.ClipSectionLabel}" />
+            <Grid ColumnDefinitions="Auto,*,Auto,*">
+                <TextBlock
+                    Grid.Column="0"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding LocalizationManager.ClipStartLabel}" />
+                <TextBox
+                    Grid.Column="1"
+                    PlaceholderText="{Binding LocalizationManager.ClipPlaceholderText}"
+                    Text="{Binding ClipStartText}" />
+                <TextBlock
+                    Grid.Column="2"
+                    Margin="16,0,8,0"
+                    VerticalAlignment="Center"
+                    Text="{Binding LocalizationManager.ClipEndLabel}" />
+                <TextBox
+                    Grid.Column="3"
+                    PlaceholderText="{Binding LocalizationManager.ClipPlaceholderText}"
+                    Text="{Binding ClipEndText}" />
+            </Grid>
+            <TextBlock
+                FontSize="12"
+                IsVisible="{Binding HasClipError}"
+                Text="{Binding ClipErrorMessage}"
+                TextWrapping="Wrap">
+                <TextBlock.Foreground>
+                    <SolidColorBrush Color="{DynamicResource MaterialValidationErrorColor}" />
+                </TextBlock.Foreground>
+            </TextBlock>
+        </StackPanel>
 
         <!--  Buttons  -->
         <UniformGrid
-            Grid.Row="3"
+            Grid.Row="4"
             Margin="8"
             Columns="2">
             <!--  Download  -->

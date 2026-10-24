@@ -7,8 +7,11 @@ namespace YoutubeDownloader.Core.Utils;
 
 public static class Http
 {
+    // Global download speed limit in bytes per second; 0 or less means unlimited
+    public static long MaxBytesPerSecond { get; set; }
+
     public static HttpClient Client { get; } =
-        new()
+        new(new ThrottlingHandler(new SocketsHttpHandler()))
         {
             DefaultRequestHeaders =
             {
